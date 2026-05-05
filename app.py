@@ -2,8 +2,11 @@
 ErgoWork — Backend Flask Completo
 Fixes: upload de vídeo corrigido, todas as rotas, Google OAuth, mobile
 """
-from dotenv import load_dotenv
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, jsonify, send_from_directory)
