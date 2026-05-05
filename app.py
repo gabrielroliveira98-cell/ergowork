@@ -2,6 +2,9 @@
 ErgoWork — Backend Flask Completo
 Fixes: upload de vídeo corrigido, todas as rotas, Google OAuth, mobile
 """
+from dotenv import load_dotenv
+load_dotenv()
+
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, jsonify, send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
@@ -261,6 +264,11 @@ def salvar_checklist():
 @login_required
 def exercicios():
     return render_template('exercicios.html', user=current_user())
+
+@app.route('/estudos')
+@login_required
+def estudos():
+    return render_template('estudos.html', user=current_user())
 
 @app.route('/midias')
 @login_required

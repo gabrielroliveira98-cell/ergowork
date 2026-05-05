@@ -112,8 +112,19 @@
 function tic(){var n=new Date();document.getElementById('clockT').textContent=n.toLocaleTimeString('pt-BR');document.getElementById('clockD').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 setInterval(tic,1000);tic();
 {% if hoje and hoje.entrada and not hoje.saida %}
-var _st={{ (hoje.entrada.timestamp()*1000)|int }};
-setInterval(function(){var ms=Date.now()-_st,h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);var el=document.getElementById('timerLive');if(el)el.textContent=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
+var _ent={{ (hoje.entrada.timestamp()*1000)|int }};
+var _almMs={% if hoje.almoco and not hoje.retorno %}{{ (hoje.almoco.timestamp()*1000)|int }}{% else %}0{% endif %};
+var _retMs={% if hoje.retorno %}{{ (hoje.retorno.timestamp()*1000)|int }}{% else %}0{% endif %};
+var _pausaFixa=_retMs>0?(_retMs-_almMs):0;
+setInterval(function(){
+  var now=Date.now();
+  var pausa=_pausaFixa>0?_pausaFixa:(_almMs>0&&_retMs===0?now-_almMs:0);
+  var ms=now-_ent-pausa;
+  if(ms<0)ms=0;
+  var h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);
+  var el=document.getElementById('timerLive');
+  if(el)el.textContent=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
+},1000);
 {% endif %}
 async function reg(tipo){
   var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tipo='+tipo});

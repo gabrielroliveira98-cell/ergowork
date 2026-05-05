@@ -1,0 +1,399 @@
+{% extends "layout.html" %}
+{% set active = 'estudos' %}
+{% block title %}Estudos — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar"><div><h2>Materiais de Estudo 📚</h2><div class="sub">Treinamentos e campanhas de segurança</div></div></div>
+{% endblock %}
+{% block head %}
+<style>
+.estudos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px}
+.mat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+.mat-header{padding:20px 20px 16px;display:flex;align-items:flex-start;gap:14px}
+.mat-ico{font-size:2.2rem;flex-shrink:0;line-height:1}
+.mat-meta{flex:1}
+.mat-title{font-size:1rem;font-weight:800;margin-bottom:3px}
+.mat-sub{font-size:.76rem;color:var(--text2);line-height:1.4}
+.mat-tag{display:inline-block;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;margin-top:6px}
+.tag-amber{background:var(--amber-l);color:var(--amber)}
+.tag-green{background:var(--green-l);color:var(--green)}
+.tag-blue {background:var(--blue-l);color:var(--blue)}
+.mat-body{padding:0 20px;flex:1}
+.acc-item{border-top:1px solid var(--border)}
+.acc-item:first-child{border-top:none}
+.acc-btn{width:100%;background:none;border:none;text-align:left;padding:12px 0;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.84rem;cursor:pointer;color:var(--text);gap:8px}
+.acc-btn:hover{color:var(--ink)}
+.acc-arrow{font-size:.7rem;transition:transform .2s;flex-shrink:0}
+.acc-panel{display:none;padding-bottom:14px;font-size:.83rem;color:var(--text2);line-height:1.65}
+.acc-panel.open{display:block}
+.acc-arrow.open{transform:rotate(180deg)}
+.stat-row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
+.stat-pill{background:var(--bg2);border-radius:9px;padding:10px 14px;text-align:center;flex:1;min-width:80px}
+.stat-pill strong{display:block;font-size:1.1rem;font-weight:800}
+.stat-pill span{font-size:.7rem;color:var(--text2)}
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.tip-list li{display:flex;align-items:flex-start;gap:8px;font-size:.83rem;color:var(--text2)}
+.tip-list li::before{content:'✓';color:var(--green);font-weight:800;flex-shrink:0;margin-top:1px}
+.tip-list.warn li::before{content:'✗';color:var(--red)}
+.mat-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.prog-bar{height:5px;background:var(--bg2);border-radius:10px;overflow:hidden;flex:1;margin:0 10px}
+.prog-fill{height:100%;border-radius:10px;transition:width .4s}
+.read-btn{font-size:.76rem;font-weight:700;padding:6px 14px;border-radius:20px;border:none;cursor:pointer;transition:all .18s}
+.read-btn.unread{background:var(--ink);color:#fff}
+.read-btn.done{background:var(--green-l);color:var(--green)}
+.section-header{margin:24px 0 12px;font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px}
+.gym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
+.gym-card{background:var(--bg2);border-radius:9px;padding:10px 12px}
+.gym-card .gym-n{font-weight:700;font-size:.82rem;margin-bottom:3px}
+.gym-card .gym-d{font-size:.76rem;color:var(--text2);line-height:1.45}
+@media(max-width:600px){.gym-grid{grid-template-columns:1fr}}
+.badge-prog{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;color:var(--text2)}
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="section-header">Materiais disponíveis</div>
+<div class="estudos-grid">
+
+  <!-- ── CARD 1: Maio Amarelo ── -->
+  <div class="mat-card" id="card-maio">
+    <div class="mat-header">
+      <div class="mat-ico">🚦</div>
+      <div class="mat-meta">
+        <div class="mat-title">Maio Amarelo</div>
+        <div class="mat-sub">Campanha de conscientização sobre segurança no trânsito</div>
+        <span class="mat-tag tag-amber">Segurança Viária</span>
+      </div>
+    </div>
+    <div class="mat-body">
+
+      <div class="stat-row">
+        <div class="stat-pill"><strong>1,35M</strong><span>mortes/ano</span></div>
+        <div class="stat-pill"><strong>+90%</strong><span>falha humana</span></div>
+        <div class="stat-pill"><strong>Mai.</strong><span>conscientização</span></div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          O que é o Maio Amarelo?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          O movimento <strong>Maio Amarelo</strong> é uma campanha de conscientização sobre segurança no trânsito que tem como objetivo chamar atenção da sociedade para o alto índice de mortes e feridos no trânsito em todo o mundo.<br><br>
+          Cerca de <strong>1,35 milhão de pessoas</strong> morrem a cada ano em decorrência de acidentes de trânsito. Mais de <strong>90%</strong> dos acidentes ocorrem por falha humana — imperícia, imprudência ou desatenção.
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Como melhorar a segurança no trânsito?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          Por meio da <strong>Direção Defensiva</strong> — conjunto de medidas que devem ser adotadas pelos motoristas com o objetivo de melhorar a segurança no trânsito — é possível diminuir o número de acidentes ou minimizar as suas consequências.<br><br>
+          Além de praticar a direção defensiva, o motorista deve tomar cuidados para promover a segurança de si mesmo, dos demais condutores, passageiros e dos usuários mais vulneráveis das vias, como pedestres, motociclistas e ciclistas.
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Como fazer a sua parte?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list">
+            <li>Respeite os limites de velocidade</li>
+            <li>Sempre use o cinto de segurança</li>
+            <li>Se beber, não dirija</li>
+            <li>Respeite a sinalização de trânsito</li>
+            <li>Não dirija ou atravesse vias usando o celular</li>
+            <li>Atenção com pedestres, ciclistas e motociclistas</li>
+            <li>Mantenha a distância de segurança dos veículos</li>
+            <li>Use sempre a faixa de pedestres para atravessar</li>
+          </ul>
+          <br>
+          <em>A segurança no trânsito é um dever de todos. Seja motorista, motociclista, pedestre ou ciclista — adote atitudes preventivas.</em>
+        </div>
+      </div>
+
+    </div>
+    <div class="mat-footer">
+      <div class="badge-prog" id="prog-maio">0% lido</div>
+      <div class="prog-bar"><div class="prog-fill" id="fill-maio" style="width:0%;background:var(--amber)"></div></div>
+      <button class="read-btn unread" id="btn-maio" onclick="marcar('maio')">Marcar lido</button>
+    </div>
+  </div>
+
+  <!-- ── CARD 2: Ergonomia no Escritório ── -->
+  <div class="mat-card" id="card-ergo">
+    <div class="mat-header">
+      <div class="mat-ico">🪑</div>
+      <div class="mat-meta">
+        <div class="mat-title">Ergonomia no Escritório</div>
+        <div class="mat-sub">Postura correta e dicas para trabalhar com saúde</div>
+        <span class="mat-tag tag-green">Ergonomia</span>
+      </div>
+    </div>
+    <div class="mat-body">
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Dicas gerais de boa postura
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list">
+            <li>Monitor ao nível dos olhos, distante 45–70 cm</li>
+            <li>Cabeça e pescoço em posição reta, ombros relaxados</li>
+            <li>Região lombar apoiada no encosto da cadeira</li>
+            <li>Antebraço, punhos e mãos em linha reta (posição neutra)</li>
+            <li>Cotovelo junto ao corpo</li>
+            <li>Espaço entre a dobra do joelho e a borda da cadeira</li>
+            <li>Ângulo igual ou superior a 90° para joelhos e quadril</li>
+            <li>Pés apoiados no chão ou em descanso para os pés</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Fatores operacionais (mesa e periféricos)
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list">
+            <li>Manter o documento próximo ao monitor e no mesmo plano visual (digitação)</li>
+            <li>Mouse e outros acessórios próximos ao teclado, no mesmo plano</li>
+            <li>Utilizar apoio para os punhos para manter a postura neutra</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          O que NÃO fazer — erros comuns
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list warn">
+            <li>Torcer o pescoço para ver a tela</li>
+            <li>Monitor muito baixo (cabeça caída para frente)</li>
+            <li>Monitor muito alto (cabeça inclinada para trás)</li>
+            <li>Mouse afastado do teclado (braço estendido lateralmente)</li>
+            <li>Punho dobrado para cima ou para baixo no mouse/teclado</li>
+            <li>Dedos apontados para dentro ou mãos cruzadas no teclado</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Consequências da má postura
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list warn">
+            <li>Dor no pescoço</li>
+            <li>Dor nas costas</li>
+            <li>Dor nos braços ou antebraço</li>
+            <li>Dor nas mãos</li>
+            <li>Sensação de cansaço e desconforto</li>
+            <li>LER / DORT</li>
+          </ul>
+          <br>
+          A melhor coisa é <strong>prevenir</strong> estes problemas. Mantenha-se sempre na <strong>postura NEUTRA</strong> — isso pode significar um dia mais produtivo e confortável para você.
+        </div>
+      </div>
+
+    </div>
+    <div class="mat-footer">
+      <div class="badge-prog" id="prog-ergo">0% lido</div>
+      <div class="prog-bar"><div class="prog-fill" id="fill-ergo" style="width:0%;background:var(--green)"></div></div>
+      <button class="read-btn unread" id="btn-ergo" onclick="marcar('ergo')">Marcar lido</button>
+    </div>
+  </div>
+
+  <!-- ── CARD 3: Treinamento Ergonomia SEGSEMPRE ── -->
+  <div class="mat-card" id="card-seg">
+    <div class="mat-header">
+      <div class="mat-ico">🏋️</div>
+      <div class="mat-meta">
+        <div class="mat-title">Orientação Ergonômica — Foco ADM</div>
+        <div class="mat-sub">Treinamento completo: ergonomia, LER/DORT e ginástica laboral</div>
+        <span class="mat-tag tag-blue">Treinamento</span>
+      </div>
+    </div>
+    <div class="mat-body">
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          O que é Ergonomia?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          Ergonomia é um conjunto de ciências e tecnologias que procura a <strong>adaptação confortável e produtiva</strong> entre o ser humano e seu trabalho, basicamente procurando adaptar as condições de trabalho às características do ser humano.<br><br>
+          A ergonomia está (ou deveria estar) presente em todas as áreas da vida — em casa, no escritório, nos móveis, na cozinha, em espaços de trabalho e muito mais.
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Postura correta no computador
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list">
+            <li>Ambiente neutro, superfícies não refletoras e pouco ruído</li>
+            <li>Regular brilho e contraste do monitor</li>
+            <li>Teclado diretamente à sua frente</li>
+            <li>Mouse próximo ao teclado e no mesmo nível</li>
+            <li>Joelhos discretamente abaixo do quadril</li>
+            <li>Pés apoiados no solo ou em descanso para os pés</li>
+            <li>Iluminação adequada, com luz indireta de preferência</li>
+            <li>Ombros e quadris alinhados</li>
+            <li>Encosto adaptado à curvatura da coluna</li>
+            <li>Descanso de braço na altura do cotovelo</li>
+            <li>Altura do assento abaixo da patela</li>
+            <li>Documento próximo ao monitor (no mesmo plano visual)</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          O que são LER e DORT?
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <strong>LER — Lesão por Esforço Repetitivo</strong><br>
+          Conjunto de síndromes que atacam os nervos, músculos e tendões (juntos ou separadamente).<br><br>
+          <strong>DORT — Distúrbio Osteomuscular Relacionado ao Trabalho</strong><br>
+          É exatamente igual à LER, porém identifica exatamente a origem do problema: <strong>O TRABALHO</strong>.<br><br>
+          <em>Origem na atividade ocupacional = DORT &nbsp;|&nbsp; Outra origem = LER</em>
+        </div>
+      </div>
+
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          Ginástica Laboral — Exercícios
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          A ginástica laboral é a prática voluntária de atividade física no ambiente de trabalho, visando melhorar a condição física do trabalhador, evitar lesões e auxiliar na jornada de trabalho.<br><br>
+          <div class="gym-grid">
+            <div class="gym-card">
+              <div class="gym-n">Alongamento de braços</div>
+              <div class="gym-d">Braços acima da cabeça com dedos cruzados. Segure 5 segundos, estendendo cada braço até sentir leve tensão.</div>
+            </div>
+            <div class="gym-card">
+              <div class="gym-n">Flexão lateral do tronco</div>
+              <div class="gym-d">Braços dobrados, mão no cotovelo contrário. Incline o tronco lateralmente, 5 segundos de cada lado.</div>
+            </div>
+            <div class="gym-card">
+              <div class="gym-n">Elevação de ombros</div>
+              <div class="gym-d">Eleve os ombros contraindo os músculos das costas. Segure 5 segundos até sentir suave tensão.</div>
+            </div>
+            <div class="gym-card">
+              <div class="gym-n">Pescoço e ombro</div>
+              <div class="gym-d">Mãos entrelaçadas atrás das costas. Estique o pescoço para o lado contrário. 5 segundos por lado.</div>
+            </div>
+            <div class="gym-card">
+              <div class="gym-n">Palmas — flexão de punho</div>
+              <div class="gym-d">Palmas juntas com dedos para cima. Empurre uma contra a outra, 8 segundos até sentir tensão no antebraço.</div>
+            </div>
+            <div class="gym-card">
+              <div class="gym-n">Rotação de punhos</div>
+              <div class="gym-d">Palmas juntas, gire as mãos para baixo estirando os pulsos. 8 segundos, cada antebraço.</div>
+            </div>
+          </div>
+          <br>
+          <strong>Pratique-os:</strong>
+          <ul class="tip-list" style="margin-top:6px">
+            <li>No início da jornada</li>
+            <li>No término da jornada</li>
+            <li>No horário de intervalo</li>
+            <li>Em cada momento que sentir incômodo ou dor</li>
+          </ul>
+        </div>
+      </div>
+
+    </div>
+    <div class="mat-footer">
+      <div class="badge-prog" id="prog-seg">0% lido</div>
+      <div class="prog-bar"><div class="prog-fill" id="fill-seg" style="width:0%;background:var(--blue)"></div></div>
+      <button class="read-btn unread" id="btn-seg" onclick="marcar('seg')">Marcar lido</button>
+    </div>
+  </div>
+
+</div><!-- /estudos-grid -->
+
+<!-- Progresso geral -->
+<div class="card" style="max-width:500px">
+  <div class="card-title">Seu progresso nos estudos</div>
+  <div class="card-sub">Materiais concluídos</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="font-size:2rem;font-weight:800" id="countLido">0</div>
+    <div style="flex:1">
+      <div style="font-size:.78rem;color:var(--text2);margin-bottom:4px">de 3 materiais lidos</div>
+      <div class="prog-bar" style="margin:0;height:8px"><div class="prog-fill" id="fill-geral" style="width:0%;background:var(--ink)"></div></div>
+    </div>
+    <div id="trofeu" style="font-size:1.8rem;display:none">🏆</div>
+  </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+function toggle(btn){
+  var panel=btn.nextElementSibling,arrow=btn.querySelector('.acc-arrow');
+  var open=panel.classList.toggle('open');
+  arrow.classList.toggle('open',open);
+}
+
+var KEYS=['maio','ergo','seg'];
+var COLORS={maio:'var(--amber)',ergo:'var(--green)',seg:'var(--blue)'};
+
+function loadState(){
+  KEYS.forEach(function(k){
+    var done=localStorage.getItem('estudo_'+k)==='1';
+    applyState(k,done);
+  });
+  updateGeral();
+}
+
+function applyState(k,done){
+  var btn=document.getElementById('btn-'+k);
+  var fill=document.getElementById('fill-'+k);
+  var prog=document.getElementById('prog-'+k);
+  if(done){
+    btn.textContent='✓ Concluído';
+    btn.className='read-btn done';
+    fill.style.width='100%';
+    prog.textContent='100% lido';
+  } else {
+    btn.textContent='Marcar lido';
+    btn.className='read-btn unread';
+    fill.style.width='0%';
+    prog.textContent='0% lido';
+  }
+}
+
+function marcar(k){
+  var done=localStorage.getItem('estudo_'+k)==='1';
+  var novo=done?'0':'1';
+  localStorage.setItem('estudo_'+k,novo);
+  applyState(k,novo==='1');
+  updateGeral();
+  showToast(novo==='1'?'✓ Material marcado como lido!':'Material desmarcado.');
+}
+
+function updateGeral(){
+  var count=KEYS.filter(function(k){return localStorage.getItem('estudo_'+k)==='1'}).length;
+  document.getElementById('countLido').textContent=count;
+  var pct=Math.round(count/KEYS.length*100);
+  document.getElementById('fill-geral').style.width=pct+'%';
+  document.getElementById('trofeu').style.display=count===KEYS.length?'block':'none';
+}
+
+loadState();
+</script>
+{% endblock %}
