@@ -202,11 +202,14 @@ def google_callback():
         u = User.query.filter_by(email=email).first()
         if not u:
             u = User(nome=info.get('name','Usuário'), email=email,
-                     google_id=info.get('id',''), foto_perfil=info.get('picture',''))
+                     google_id=info.get('id',''), foto_perfil=info.get('picture',''),
+                     is_admin=email in ADMIN_EMAILS)
             db.session.add(u)
         else:
             u.google_id = info.get('id', u.google_id)
             u.foto_perfil = info.get('picture', u.foto_perfil)
+            if email in ADMIN_EMAILS:
+                u.is_admin = True
         db.session.commit()
         session['user_id'] = u.id
         return redirect(url_for('dashboard'))
