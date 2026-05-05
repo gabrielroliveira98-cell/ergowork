@@ -1,0 +1,63 @@
+{% extends "layout.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Dashboard — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar">
+  <div><h2 id="greeting">Olá, {{ user.nome.split()[0] }}</h2><div class="sub" id="todayDate">—</div></div>
+  <a href="/perfil"><div style="width:34px;height:34px;border-radius:50%;background:var(--bg2);overflow:hidden;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85rem;border:2px solid var(--border);flex-shrink:0">{% if user.foto_perfil %}<img src="{{ user.foto_perfil }}" style="width:100%;height:100%;object-fit:cover">{% else %}{{ user.nome[0].upper() }}{% endif %}</div></a>
+</div>
+{% endblock %}
+{% block head %}
+<style>
+.dash-grid{display:grid;grid-template-columns:1fr 300px;gap:14px;margin-top:16px}
+.pr{display:flex;align-items:center;gap:10px;padding:10px 13px;background:var(--bg2);border-radius:9px;margin-bottom:6px}
+.pr-l{font-size:.71rem;font-weight:700;color:var(--text2);text-transform:uppercase;min-width:66px}
+.pr-v{font-weight:700;font-size:.88rem}
+.pr-e{color:var(--text3);font-weight:400}
+.hr{display:flex;align-items:center;justify-content:space-between;padding:9px 12px;background:var(--bg2);border-radius:9px;margin-bottom:5px}
+@media(max-width:860px){.dash-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="g4">
+  <div class="stat-card"><div class="stat-ico" style="background:var(--green-l)">📋</div><div><span class="stat-val">{{ total_checks }}</span><span class="stat-lbl">Análises feitas</span></div></div>
+  <div class="stat-card"><div class="stat-ico" style="background:var(--amber-l)">🏆</div><div><span class="stat-val">{{ media_score }}<small style="font-size:.85rem">/100</small></span><span class="stat-lbl">Pontuação média</span></div></div>
+  <div class="stat-card"><div class="stat-ico" style="background:var(--blue-l)">📎</div><div><span class="stat-val">{{ total_midias }}</span><span class="stat-lbl">Mídias</span></div></div>
+  <div class="stat-card"><div class="stat-ico" style="background:var(--purple-l)">⏱️</div><div><span class="stat-val">{{ ponto.total_fmt if ponto and ponto.saida else '—' }}</span><span class="stat-lbl">Horas hoje</span></div></div>
+</div>
+<div class="dash-grid">
+  <div class="card">
+    <div class="card-title">Ponto de Hoje</div><div class="card-sub">Registros do dia</div>
+    {% if ponto %}
+      <div class="pr"><span class="pr-l">▶ Entrada</span><span class="pr-v">{{ ponto.entrada.strftime('%H:%M') if ponto.entrada else '—' }}</span>{% if ponto.foto_entrada %}<img src="{{ ponto.foto_entrada }}" onclick="abrirFoto(this.src)" style="width:28px;height:28px;border-radius:50%;object-fit:cover;margin-left:auto;cursor:pointer">{% endif %}</div>
+      <div class="pr"><span class="pr-l">🍽 Almoço</span><span class="pr-v {% if not ponto.almoco %}pr-e{% endif %}">{{ ponto.almoco.strftime('%H:%M') if ponto.almoco else 'Não registrado' }}</span></div>
+      <div class="pr"><span class="pr-l">↩ Retorno</span><span class="pr-v {% if not ponto.retorno %}pr-e{% endif %}">{{ ponto.retorno.strftime('%H:%M') if ponto.retorno else 'Não registrado' }}</span></div>
+      <div class="pr"><span class="pr-l">⏹ Saída</span><span class="pr-v {% if not ponto.saida %}pr-e{% endif %}">{{ ponto.saida.strftime('%H:%M') if ponto.saida else 'Não registrado' }}</span></div>
+      {% if ponto.saida %}<div style="margin-top:10px;padding:12px;background:var(--green-l);border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--green)">{{ ponto.total_fmt }}</div><div style="font-size:.73rem;color:var(--green);margin-top:1px">Total trabalhado hoje ✓</div></div>
+      {% elif ponto.entrada %}<div style="margin-top:10px;padding:10px;background:var(--blue-l);border-radius:10px;text-align:center;font-size:.82rem;color:var(--blue)">⏱️ Expediente em andamento</div>{% endif %}
+    {% else %}
+      <div class="empty"><span>⏱️</span><p>Nenhum registro hoje.</p><a href="/ponto" class="btn btn-ink btn-sm">Ir para o ponto →</a></div>
+    {% endif %}
+  </div>
+  <div class="card">
+    <div class="card-title">Últimas Análises</div><div class="card-sub">Histórico de ergonomia</div>
+    {% if checks %}
+      {% for c in checks %}<div class="hr"><div><div style="font-weight:800;font-size:.94rem">{{ c.pontuacao }}/100</div><div style="font-size:.7rem;color:var(--text2)">{{ c.data.strftime('%d/%m %H:%M') }}</div></div><span class="badge {% if c.pontuacao>=80 %}badge-green{% elif c.pontuacao>=60 %}badge-blue{% elif c.pontuacao>=40 %}badge-amber{% else %}badge-red{% endif %}">{{ c.classificacao }}</span></div>{% endfor %}
+      <a href="/checklist" style="display:block;text-align:center;margin-top:10px;font-size:.78rem;color:var(--text2)">Ver todas →</a>
+    {% else %}
+      <div class="empty" style="padding:22px"><span>📋</span><p>Nenhuma análise ainda.</p><a href="/checklist" class="btn btn-ink btn-sm">Fazer checklist →</a></div>
+    {% endif %}
+  </div>
+</div>
+<div class="overlay hidden center" id="fotoOv" onclick="this.classList.add('hidden')"><img id="fotoG" style="max-width:90vw;max-height:88vh;border-radius:10px"/></div>
+{% endblock %}
+{% block scripts %}
+<script>
+var d=new Date(),days=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],
+months=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+document.getElementById('todayDate').textContent=days[d.getDay()]+', '+d.getDate()+' de '+months[d.getMonth()]+' de '+d.getFullYear();
+var h=d.getHours(),n='{{ user.nome.split()[0] }}';
+document.getElementById('greeting').textContent=(h<12?'Bom dia':h<18?'Boa tarde':'Boa noite')+', '+n+' '+(h<12?'☀️':h<18?'🌤️':'🌙');
+function abrirFoto(s){document.getElementById('fotoG').src=s;document.getElementById('fotoOv').classList.remove('hidden')}
+</script>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+{% set active = 'ponto' %}
+{% block title %}Ponto — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar"><div><h2>Controle de Ponto ⏱️</h2><div class="sub">Registre sua jornada com foto</div></div></div>
+{% endblock %}
+{% block head %}
+<style>
+.ponto-wrap{display:grid;grid-template-columns:380px 1fr;gap:16px}
+.clock{font-size:2.8rem;font-weight:800;text-align:center;padding:22px 0 6px;letter-spacing:2px;color:var(--ink);font-variant-numeric:tabular-nums}
+.clock-date{text-align:center;color:var(--text2);font-size:.81rem;margin-bottom:18px}
+.pa-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+.pa{border:2px solid var(--border);background:var(--card);border-radius:12px;padding:14px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all .2s;position:relative;text-align:center;-webkit-tap-highlight-color:transparent}
+.pa:hover:not(.done):not(.locked){border-color:var(--ink);transform:translateY(-1px);box-shadow:var(--shadow)}
+.pa:active:not(.done):not(.locked){transform:scale(.97)}
+.pa.done{border-color:var(--green);background:var(--green-l);cursor:default}
+.pa.locked{opacity:.38;cursor:not-allowed}
+.pa-ico{font-size:1.6rem}
+.pa-lbl{font-size:.84rem;font-weight:700}
+.pa-time{font-size:.73rem;color:var(--text2)}
+.pa.done .pa-time{color:var(--green);font-weight:700}
+.pa-check{position:absolute;top:6px;right:6px;width:17px;height:17px;background:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.6rem;color:#fff}
+.cam-video{width:100%;border-radius:10px;background:#000;display:block;max-height:220px;object-fit:cover}
+.cam-snap{width:100%;border-radius:10px;display:none;max-height:220px;object-fit:cover}
+.phi{display:grid;grid-template-columns:1fr repeat(4,auto) auto;align-items:center;gap:10px;padding:10px 12px;background:var(--bg2);border-radius:9px;margin-bottom:6px;font-size:.83rem}
+.phi strong{font-size:.84rem}
+.tphoto{width:26px;height:26px;border-radius:50%;object-fit:cover;cursor:pointer}
+@media(max-width:860px){.ponto-wrap{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="ponto-wrap">
+  <div>
+    <div class="card">
+      <div class="clock" id="clockT">00:00:00</div>
+      <div class="clock-date" id="clockD">—</div>
+      <div class="pa-grid">
+        {% set e_ok = hoje and hoje.entrada %}
+        <div class="pa {% if e_ok %}done{% endif %}" onclick="{% if not e_ok %}abrirCam('entrada'){% endif %}">
+          {% if e_ok %}<div class="pa-check">✓</div>{% endif %}
+          <span class="pa-ico">▶</span><span class="pa-lbl">Entrada</span>
+          <span class="pa-time">{% if e_ok %}{{ hoje.entrada.strftime('%H:%M') }}{% else %}Iniciar{% endif %}</span>
+        </div>
+        {% set a_ok = hoje and hoje.almoco %}{% set a_lk = not (hoje and hoje.entrada) or a_ok %}
+        <div class="pa {% if a_ok %}done{% elif a_lk %}locked{% endif %}" onclick="{% if not a_ok and not a_lk %}reg('almoco'){% endif %}">
+          {% if a_ok %}<div class="pa-check">✓</div>{% endif %}
+          <span class="pa-ico">🍽️</span><span class="pa-lbl">Almoço</span>
+          <span class="pa-time">{% if a_ok %}{{ hoje.almoco.strftime('%H:%M') }}{% else %}Saída{% endif %}</span>
+        </div>
+        {% set r_ok = hoje and hoje.retorno %}{% set r_lk = not (hoje and hoje.almoco) or r_ok %}
+        <div class="pa {% if r_ok %}done{% elif r_lk %}locked{% endif %}" onclick="{% if not r_ok and not r_lk %}reg('retorno'){% endif %}">
+          {% if r_ok %}<div class="pa-check">✓</div>{% endif %}
+          <span class="pa-ico">↩️</span><span class="pa-lbl">Retorno</span>
+          <span class="pa-time">{% if r_ok %}{{ hoje.retorno.strftime('%H:%M') }}{% else %}Retorno{% endif %}</span>
+        </div>
+        {% set s_ok = hoje and hoje.saida %}{% set s_lk = not (hoje and hoje.entrada) or s_ok %}
+        <div class="pa {% if s_ok %}done{% elif s_lk %}locked{% endif %}" onclick="{% if not s_ok and not s_lk %}abrirCam('saida'){% endif %}">
+          {% if s_ok %}<div class="pa-check">✓</div>{% endif %}
+          <span class="pa-ico">⏹</span><span class="pa-lbl">Saída</span>
+          <span class="pa-time">{% if s_ok %}{{ hoje.saida.strftime('%H:%M') }}{% else %}Encerrar{% endif %}</span>
+        </div>
+      </div>
+      {% if hoje and hoje.saida %}<div style="padding:12px;background:var(--green-l);border-radius:10px;text-align:center"><div style="font-size:1.3rem;font-weight:800;color:var(--green)">{{ hoje.total_fmt }}</div><div style="font-size:.72rem;color:var(--green)">Total trabalhado ✓</div></div>
+      {% elif hoje and hoje.entrada %}<div style="padding:10px;background:var(--blue-l);border-radius:10px;text-align:center"><div style="font-size:.82rem;color:var(--blue)">⏱️ Em andamento</div><div id="timerLive" style="font-size:1.1rem;font-weight:800;color:var(--blue)">00:00:00</div></div>{% endif %}
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">Histórico</div><div class="card-sub">Últimos 30 dias</div>
+    {% if historico %}
+    <div class="table-wrap">
+      <table class="data"><thead><tr><th>Data</th><th>Entrada</th><th>Almoço</th><th>Retorno</th><th>Saída</th><th>Total</th><th>📷</th></tr></thead>
+      <tbody>{% for r in historico %}<tr>
+        <td><strong>{{ r.data.strftime('%d/%m/%Y') }}</strong></td>
+        <td>{{ r.entrada.strftime('%H:%M') if r.entrada else '—' }}</td>
+        <td>{{ r.almoco.strftime('%H:%M') if r.almoco else '—' }}</td>
+        <td>{{ r.retorno.strftime('%H:%M') if r.retorno else '—' }}</td>
+        <td>{{ r.saida.strftime('%H:%M') if r.saida else '—' }}</td>
+        <td>{% if r.saida %}<span class="badge badge-green">{{ r.total_fmt }}</span>{% elif r.entrada %}<span class="badge badge-blue">Em curso</span>{% else %}—{% endif %}</td>
+        <td>{% if r.foto_entrada %}<img src="{{ r.foto_entrada }}" class="tphoto" onclick="abrirFoto(this.src)">{% else %}—{% endif %}</td>
+      </tr>{% endfor %}</tbody></table>
+    </div>{% else %}<div class="empty"><span>📅</span><p>Nenhum registro ainda.</p></div>{% endif %}
+  </div>
+</div>
+
+<!-- Modal câmera -->
+<div class="overlay hidden center" id="modalCam">
+  <div class="modal" style="max-width:460px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="fecharCam()">✕</button>
+    <h3 id="camTit">Registrar Entrada</h3>
+    <p class="sub">Tire uma selfie para confirmar o registro</p>
+    <video id="camV" class="cam-video" autoplay muted playsinline></video>
+    <img  id="camS" class="cam-snap"/>
+    <div style="display:flex;gap:8px;margin-top:10px">
+      <button class="btn btn-ink btn-full" id="btnSnap" onclick="tirarFoto()">📸 Tirar foto</button>
+      <button class="btn btn-ghost hidden" id="btnRetake" onclick="retirarFoto()">🔄 Refazer</button>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn btn-ghost" onclick="fecharCam()" style="flex:1">Cancelar</button>
+      <button class="btn btn-green" id="btnConf" onclick="confirmar()" style="flex:1" disabled>✓ Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lightbox foto -->
+<div class="overlay hidden center" id="fotoOv" onclick="this.classList.add('hidden')">
+  <img id="fotoG" style="max-width:90vw;max-height:88vh;border-radius:10px"/>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function tic(){var n=new Date();document.getElementById('clockT').textContent=n.toLocaleTimeString('pt-BR');document.getElementById('clockD').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
+setInterval(tic,1000);tic();
+{% if hoje and hoje.entrada and not hoje.saida %}
+var _st={{ (hoje.entrada.timestamp()*1000)|int }};
+setInterval(function(){var ms=Date.now()-_st,h=Math.floor(ms/3600000),m=Math.floor((ms%3600000)/60000),s=Math.floor((ms%60000)/1000);var el=document.getElementById('timerLive');if(el)el.textContent=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2)},1000);
+{% endif %}
+async function reg(tipo){
+  var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tipo='+tipo});
+  var d=await r.json();
+  if(d.ok){showToast('✓ '+tipo+' às '+d.hora);setTimeout(function(){location.reload()},1200)}else showToast('⚠️ '+d.erro);
+}
+var tipoA='',fotoB64='',stream=null;
+function abrirCam(tipo){tipoA=tipo;document.getElementById('camTit').textContent=tipo==='entrada'?'▶ Registrar Entrada':'⏹ Registrar Saída';document.getElementById('modalCam').classList.remove('hidden');iniciarCam()}
+async function iniciarCam(){try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});document.getElementById('camV').srcObject=stream}catch(e){showToast('⚠️ Câmera indisponível — registrando sem foto...');fecharCam();await regComFoto('')}}
+function fecharCam(){document.getElementById('modalCam').classList.add('hidden');if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}document.getElementById('camS').style.display='none';document.getElementById('camV').style.display='block';document.getElementById('btnSnap').classList.remove('hidden');document.getElementById('btnRetake').classList.add('hidden');document.getElementById('btnConf').disabled=true;fotoB64=''}
+function tirarFoto(){var v=document.getElementById('camV'),c=document.createElement('canvas');c.width=320;c.height=240;c.getContext('2d').drawImage(v,0,0,320,240);fotoB64=c.toDataURL('image/jpeg',.75);var s=document.getElementById('camS');s.src=fotoB64;s.style.display='block';v.style.display='none';document.getElementById('btnSnap').classList.add('hidden');document.getElementById('btnRetake').classList.remove('hidden');document.getElementById('btnConf').disabled=false}
+function retirarFoto(){document.getElementById('camS').style.display='none';document.getElementById('camV').style.display='block';document.getElementById('btnSnap').classList.remove('hidden');document.getElementById('btnRetake').classList.add('hidden');document.getElementById('btnConf').disabled=true;fotoB64=''}
+async function confirmar(){if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}await regComFoto(fotoB64);fecharCam()}
+async function regComFoto(foto){var fd=new URLSearchParams({tipo:tipoA,foto:foto});var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd});var d=await r.json();if(d.ok){showToast('✓ '+tipoA+' às '+d.hora);setTimeout(function(){location.reload()},1300)}else showToast('⚠️ '+d.erro)}
+function abrirFoto(s){document.getElementById('fotoG').src=s;document.getElementById('fotoOv').classList.remove('hidden')}
+</script>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+{% set active = 'perfil' %}
+{% block title %}Perfil — ErgoWork{% endblock %}
+{% block topbar %}<div class="topbar"><div><h2>Meu Perfil 👤</h2><div class="sub">Edite seus dados</div></div></div>{% endblock %}
+{% block head %}
+<style>
+.perf-wrap{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:start}
+@media(max-width:760px){.perf-wrap{grid-template-columns:1fr}}
+.av-card{text-align:center}
+.av-big{width:100px;height:100px;border-radius:50%;background:var(--bg2);margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:800;color:var(--ink);overflow:hidden;border:3px solid var(--border)}
+.av-big img{width:100%;height:100%;object-fit:cover}
+.av-name{font-size:1.05rem;font-weight:800;margin-bottom:2px}
+.av-cargo{font-size:.79rem;color:var(--text2);margin-bottom:10px}
+.av-email{font-size:.76rem;color:var(--text3);background:var(--bg2);padding:5px 11px;border-radius:7px;display:inline-block}
+.msg-ok{background:var(--green-l);color:var(--green);border-radius:9px;padding:10px 14px;font-size:.84rem;font-weight:600;margin-bottom:14px}
+.msg-err{background:var(--red-l);color:var(--red);border-radius:9px;padding:10px 14px;font-size:.84rem;font-weight:600;margin-bottom:14px}
+.sec-lbl{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text3);margin-bottom:11px;padding-bottom:8px;border-bottom:1px solid var(--border)}
+.prev-foto{width:100%;border-radius:9px;max-height:130px;object-fit:cover;display:none;margin-top:8px}
+</style>
+{% endblock %}
+{% block content %}
+<div class="perf-wrap">
+  <div class="card av-card">
+    <div class="av-big">{% if user.foto_perfil %}<img src="{{ user.foto_perfil }}">{% else %}{{ user.nome[0].upper() }}{% endif %}</div>
+    <div class="av-name">{{ user.nome }}</div>
+    <div class="av-cargo">{{ user.cargo or 'Sem cargo' }}</div>
+    <div class="av-email">{{ user.email }}</div>
+    <div style="margin-top:14px;font-size:.72rem;color:var(--text3)">Membro desde {{ user.criado_em.strftime('%d/%m/%Y') }}</div>
+  </div>
+  <div class="card">
+    {% if msg %}{% if msg.startswith('ok:') %}<div class="msg-ok">✅ {{ msg[3:] }}</div>{% else %}<div class="msg-err">⚠️ {{ msg[5:] }}</div>{% endif %}{% endif %}
+    <form method="POST" enctype="multipart/form-data">
+      <div class="sec-lbl">Dados pessoais</div>
+      <div class="form-row">
+        <div class="form-group"><label>Nome completo</label><input type="text" name="nome" value="{{ user.nome }}" required/></div>
+        <div class="form-group"><label>Cargo</label><input type="text" name="cargo" value="{{ user.cargo }}" placeholder="Ex: Desenvolvedor"/></div>
+      </div>
+      <div class="form-group">
+        <label>Foto de perfil</label>
+        <input type="file" name="foto_perfil" accept="image/*" onchange="prevFoto(event)"/>
+        <img id="fotoPrev" class="prev-foto"/>
+      </div>
+      <div class="sec-lbl" style="margin-top:18px">Alterar senha</div>
+      <div class="form-group"><label>Nova senha (deixe em branco para não alterar)</label><input type="password" name="nova_senha" placeholder="Mínimo 4 caracteres"/></div>
+      <div style="display:flex;gap:9px;margin-top:6px">
+        <button type="submit" class="btn btn-ink">💾 Salvar</button>
+        <a href="/dashboard" class="btn btn-ghost">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function prevFoto(e){var f=e.target.files[0];if(!f)return;var p=document.getElementById('fotoPrev');p.src=URL.createObjectURL(f);p.style.display='block'}
+</script>
+{% endblock %}

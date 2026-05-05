@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Cadastro — ErgoWork{% endblock %}
+{% block head %}
+<style>
+body{background:var(--ink);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.box{background:var(--card);border-radius:20px;padding:30px 24px;width:100%;max-width:440px;box-shadow:var(--shadow-lg);animation:slideUp .3s}
+.box h2{font-size:1.55rem;font-weight:800;margin-bottom:4px}
+.box .sub{color:var(--text2);font-size:.86rem;margin-bottom:22px}
+.err{background:var(--red-l);color:var(--red);border-radius:9px;padding:10px 14px;font-size:.83rem;font-weight:600;margin-bottom:14px}
+.back{display:inline-flex;align-items:center;gap:5px;font-size:.81rem;color:var(--text2);margin-bottom:16px}
+</style>
+{% endblock %}
+{% block body %}
+<div class="box">
+  <a href="/login" class="back">← Voltar ao login</a>
+  <h2>Criar conta</h2>
+  <p class="sub">Preencha para começar a usar o ErgoWork</p>
+  {% if erro %}<div class="err">⚠️ {{ erro }}</div>{% endif %}
+  <form method="POST">
+    <div class="form-row">
+      <div class="form-group"><label>Nome completo</label><input type="text" name="nome" placeholder="João Silva" required/></div>
+      <div class="form-group"><label>Cargo</label><input type="text" name="cargo" placeholder="Analista..."/></div>
+    </div>
+    <div class="form-group"><label>E-mail</label><input type="email" name="email" placeholder="seu@email.com" required/></div>
+    <div class="form-group"><label>Senha</label><input type="password" name="senha" placeholder="Mínimo 4 caracteres" required/></div>
+    <button type="submit" class="btn btn-ink btn-full">Criar conta →</button>
+  </form>
+</div>
+{% endblock %}

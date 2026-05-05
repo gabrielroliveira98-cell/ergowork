@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block body %}
+<div class="app-wrap">
+  <nav class="sidebar">
+    <div class="sb-brand">
+      <div class="sb-logo">🪑</div>
+      <span class="sb-name">ErgoWork</span>
+    </div>
+    <div class="sb-user">
+      <div class="sb-avatar">
+        {% if user.foto_perfil %}<img src="{{ user.foto_perfil }}" alt=""/>{% else %}{{ user.nome[0].upper() }}{% endif %}
+      </div>
+      <div><div class="sb-uname">{{ user.nome.split()[0] }}</div><div class="sb-role">{{ user.cargo or 'Colaborador' }}</div></div>
+    </div>
+    <div class="sb-sec">Menu</div>
+    <a href="/dashboard"  class="sb-link {% if active=='dashboard'  %}active{% endif %}"><span class="sb-icon">📊</span><span class="sb-txt">Dashboard</span></a>
+    <a href="/ponto"      class="sb-link {% if active=='ponto'      %}active{% endif %}"><span class="sb-icon">⏱️</span><span class="sb-txt">Ponto</span></a>
+    <a href="/checklist"  class="sb-link {% if active=='checklist'  %}active{% endif %}"><span class="sb-icon">✅</span><span class="sb-txt">Checklist Ergo.</span></a>
+    <a href="/exercicios" class="sb-link {% if active=='exercicios' %}active{% endif %}"><span class="sb-icon">🏋️</span><span class="sb-txt">Exercícios</span></a>
+    <a href="/midias"     class="sb-link {% if active=='midias'     %}active{% endif %}"><span class="sb-icon">📎</span><span class="sb-txt">Mídias</span></a>
+    <a href="/perfil"     class="sb-link {% if active=='perfil'     %}active{% endif %}"><span class="sb-icon">👤</span><span class="sb-txt">Perfil</span></a>
+    <div class="sb-footer"><a href="/logout"><span class="sb-icon">↩</span><span>Sair</span></a></div>
+  </nav>
+
+  <div class="main">
+    {% block topbar %}{% endblock %}
+    <div class="content">{% block content %}{% endblock %}</div>
+  </div>
+
+  <div class="bottom-nav">
+    <nav>
+      <a href="/dashboard"  class="bn-item {% if active=='dashboard'  %}active{% endif %}"><span class="bn-ico">📊</span>Início</a>
+      <a href="/ponto"      class="bn-item {% if active=='ponto'      %}active{% endif %}"><span class="bn-ico">⏱️</span>Ponto</a>
+      <a href="/checklist"  class="bn-item {% if active=='checklist'  %}active{% endif %}"><span class="bn-ico">✅</span>Ergo.</a>
+      <a href="/exercicios" class="bn-item {% if active=='exercicios' %}active{% endif %}"><span class="bn-ico">🏋️</span>Exerc.</a>
+      <a href="/midias"     class="bn-item {% if active=='midias'     %}active{% endif %}"><span class="bn-ico">📎</span>Mídias</a>
+      <a href="/perfil"     class="bn-item {% if active=='perfil'     %}active{% endif %}"><span class="bn-ico">👤</span>Perfil</a>
+    </nav>
+  </div>
+</div>
+{% endblock %}

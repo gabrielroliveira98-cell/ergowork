@@ -1,0 +1,157 @@
+{% extends "layout.html" %}
+{% set active = 'checklist' %}
+{% block title %}Checklist Ergonômico — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar">
+  <div><h2>Checklist Ergonômico ✅</h2><div class="sub">Responda Sim ou Não e receba feedback personalizado</div></div>
+  <div class="topbar-actions"><button class="btn btn-ghost btn-sm" onclick="resetar()">🔄 Novo</button></div>
+</div>
+{% endblock %}
+{% block head %}
+<style>
+.cl-wrap{display:grid;grid-template-columns:1fr 290px;gap:14px;align-items:start}
+@media(max-width:860px){.cl-wrap{grid-template-columns:1fr}}
+.q-card{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:15px 16px;margin-bottom:10px;transition:border-color .2s,background .2s}
+.q-card.ans-sim{border-color:var(--green);background:var(--green-l)}
+.q-card.ans-nao{border-color:var(--red);background:var(--red-l)}
+.q-hdr{display:flex;align-items:flex-start;gap:11px;margin-bottom:10px}
+.q-num{width:25px;height:25px;border-radius:50%;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:.69rem;font-weight:800;color:var(--text2);flex-shrink:0;margin-top:1px}
+.q-card.ans-sim .q-num{background:var(--green);color:#fff}
+.q-card.ans-nao .q-num{background:var(--red);color:#fff}
+.q-ico{font-size:1.35rem;flex-shrink:0}
+.q-txt{font-weight:700;font-size:.91rem;line-height:1.4;flex:1}
+.q-det{font-size:.76rem;color:var(--text2);margin:0 0 10px 36px;line-height:1.55}
+.q-btns{display:flex;gap:8px;margin-left:36px}
+.qb{flex:1;padding:10px;border-radius:9px;border:2px solid var(--border);background:var(--card);font-weight:700;font-size:.84rem;cursor:pointer;transition:all .17s;min-height:44px;display:flex;align-items:center;justify-content:center;gap:5px;-webkit-tap-highlight-color:transparent}
+.qb.sim{border-color:var(--green);color:var(--green)}
+.qb.sim.sel,.qb.sim:active{background:var(--green);color:#fff;border-color:var(--green)}
+.qb.nao{border-color:var(--red);color:var(--red)}
+.qb.nao.sel,.qb.nao:active{background:var(--red);color:#fff;border-color:var(--red)}
+.q-fb{margin:10px 0 0 36px;padding:10px 12px;border-radius:9px;font-size:.79rem;line-height:1.55;display:none}
+.q-card.ans-sim .fb-s{display:block;background:rgba(39,98,69,.12);color:var(--green)}
+.q-card.ans-nao .fb-n{display:block;background:rgba(168,28,28,.1);color:var(--red)}
+.fb-t{font-weight:700;margin-bottom:3px}
+/* Painel resultado */
+.res-panel{position:sticky;top:14px}
+@media(max-width:860px){.res-panel{position:static}}
+.ring-wrap{position:relative;width:130px;height:130px;margin:0 auto 12px}
+.ring-svg{width:100%;height:100%;transform:rotate(-90deg)}
+.r-bg{fill:none;stroke:var(--bg2);stroke-width:12}
+.r-fg{fill:none;stroke:var(--green);stroke-width:12;stroke-linecap:round;stroke-dasharray:352;stroke-dashoffset:352;transition:stroke-dashoffset .5s,stroke .3s}
+.ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.r-num{font-size:2rem;font-weight:800;line-height:1}
+.r-max{font-size:.69rem;color:var(--text2)}
+.res-badge{text-align:center;padding:8px;border-radius:9px;font-weight:700;font-size:.88rem;margin-bottom:11px}
+.rp-bar{background:var(--bg2);border-radius:6px;height:6px;overflow:hidden;margin-bottom:13px}
+.rp-fill{height:100%;border-radius:6px;background:var(--green);transition:width .5s}
+.tips-box{background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px;max-height:260px;overflow-y:auto}
+.tip{display:flex;gap:8px;margin-bottom:8px;font-size:.78rem;line-height:1.5}
+.tip:last-child{margin:0}
+.tip-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.prog-txt{text-align:center;font-size:.78rem;color:var(--text2);margin-bottom:12px}
+.hist-mini{display:flex;align-items:center;justify-content:space-between;padding:8px 11px;background:var(--bg2);border-radius:8px;margin-bottom:5px;font-size:.81rem}
+</style>
+{% endblock %}
+{% block content %}
+<div class="cl-wrap">
+  <div>
+    <div class="prog-txt" id="progTxt">0 de 10 respondidas</div>
+    <div id="qWrap"></div>
+  </div>
+  <div class="res-panel">
+    <div class="card" style="text-align:center">
+      <div class="ring-wrap">
+        <svg class="ring-svg" viewBox="0 0 112 112">
+          <circle class="r-bg" cx="56" cy="56" r="46"/>
+          <circle class="r-fg" id="rFg" cx="56" cy="56" r="46"/>
+        </svg>
+        <div class="ring-center"><span class="r-num" id="rNum">0</span><span class="r-max">/ 100</span></div>
+      </div>
+      <div class="res-badge" id="resBadge" style="background:var(--bg2);color:var(--text2)">🔍 Aguardando...</div>
+      <div class="rp-bar"><div class="rp-fill" id="rpFill" style="width:0%"></div></div>
+      <div class="tips-box" id="tipsBox"><div style="color:var(--text3);font-size:.78rem;text-align:center;padding:8px">Responda as perguntas para ver feedback personalizado.</div></div>
+      <button class="btn btn-ink btn-full" id="btnSalvar" onclick="salvar()" disabled>💾 Salvar análise</button>
+    </div>
+    {% if historico %}
+    <div class="card" style="margin-top:12px">
+      <div class="card-title" style="margin-bottom:10px">Histórico</div>
+      {% for h in historico %}<div class="hist-mini"><div><strong>{{ h.pontuacao }}/100</strong><div style="font-size:.7rem;color:var(--text3)">{{ h.data.strftime('%d/%m %H:%M') }}</div></div><span class="badge {% if h.pontuacao>=80 %}badge-green{% elif h.pontuacao>=60 %}badge-blue{% elif h.pontuacao>=40 %}badge-amber{% else %}badge-red{% endif %}">{{ h.classificacao }}</span></div>{% endfor %}
+    </div>{% endif %}
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+var Q=[
+  {id:'cadeira',ico:'🪑',pts:12,q:'A altura da sua cadeira está adequada?',det:'Pés totalmente apoiados no chão, coxas paralelas ao solo, joelhos em 90°.',sim:'✅ Ótimo! Cadeira bem regulada reduz tensão nos joelhos e na lombar.',nao:'❌ Ajuste até os pés ficarem planos no chão. Se muito alta, use apoio para os pés. Se muito baixa, regule o pistão.'},
+  {id:'postura',ico:'🧍',pts:15,q:'Você mantém a coluna ereta com apoio lombar?',det:'A coluna deve ter suporte na curva natural (lombar). Evite se curvar para frente.',sim:'✅ Postura excelente! Previne dores lombares e cervicais a longo prazo.',nao:'❌ Ajuste o encosto ou adicione almofada lombar. Sente-se no fundo da cadeira.'},
+  {id:'monitor',ico:'🖥️',pts:12,q:'O topo do monitor está na altura dos seus olhos?',det:'A parte superior da tela deve ficar na linha dos olhos ou levemente abaixo, a 50–70 cm.',sim:'✅ Perfeito! Evita tensão no pescoço e fadiga ocular.',nao:'❌ Use suporte de monitor para elevar. Tela baixa demais ou alta demais causa dor no pescoço.'},
+  {id:'distancia',ico:'📏',pts:10,q:'A tela está entre 50 e 70 cm dos seus olhos?',det:'Dica: estique o braço — a ponta dos dedos deve quase tocar a tela.',sim:'✅ Distância ideal! Seus olhos ficam menos sobrecarregados.',nao:'❌ Tela perto demais força os olhos; longe demais faz você se inclinar para frente.'},
+  {id:'iluminacao',ico:'💡',pts:10,q:'A iluminação é adequada, sem reflexos na tela?',det:'Luz não deve vir de trás nem de cima da tela. Prefira luz lateral e difusa.',sim:'✅ Boa iluminação! Reduz significativamente a fadiga visual.',nao:'❌ Reposicione a tela em relação às janelas, use persianas. Considere filtro anti-reflexo.'},
+  {id:'pes',ico:'🦶',pts:8,q:'Seus pés estão totalmente apoiados no chão?',det:'Pés devem repousar planos no chão ou em suporte. Pés suspensos causam tensão nas coxas.',sim:'✅ Circulação nas pernas agradece!',nao:'❌ Use apoio para os pés (caixa firme ou suporte ergonômico). Nunca trabalhe com pés pendurados.'},
+  {id:'punhos',ico:'✋',pts:10,q:'Seus punhos ficam neutros (sem dobrar) ao digitar?',det:'Pulsos devem estar retos. Dobrar para cima ou baixo causa síndrome do túnel do carpo.',sim:'✅ Ótimo para prevenir lesões por esforço repetitivo!',nao:'❌ Ajuste a altura do teclado ou use apoio de pulso. Teclado deve estar na altura dos cotovelos.'},
+  {id:'pausas',ico:'⏰',pts:10,q:'Você faz pausas de 5 min a cada 1 hora de trabalho?',det:'Pausas regulares previnem fadiga muscular, visual e mental.',sim:'✅ Excelente hábito! Pausas aumentam produtividade e reduzem lesões.',nao:'❌ Configure alarme a cada hora. Levante, caminhe, alongue-se. Tente a técnica Pomodoro (25+5 min).'},
+  {id:'mouse',ico:'🖱️',pts:8,q:'O mouse está próximo ao teclado, sem alcance exagerado?',det:'Mouse ao lado do teclado, sem precisar esticar ou elevar o ombro.',sim:'✅ Sem tensão desnecessária no ombro!',nao:'❌ Aproxime o mouse. Teclado compacto (sem numpad) ajuda a ter o mouse mais perto.'},
+  {id:'headset',ico:'🎧',pts:5,q:'Se usa telefone, usa headset em vez de prender no ombro?',det:'Prender o celular entre ombro e orelha causa tensão severa na cervical.',sim:'✅ Sua cervical agradece!',nao:'❌ Use sempre headset ou viva-voz. Nunca prenda o telefone com o ombro, mesmo por pouco tempo.'},
+];
+var resp={},TOTAL=Q.length;
+function render(){
+  var html='';
+  Q.forEach(function(p,i){
+    var a=resp[p.id]||'';
+    html+='<div class="q-card'+(a?' ans-'+a:'')+'" id="qc_'+p.id+'">'
+      +'<div class="q-hdr"><div class="q-num">'+(i+1)+'</div><span class="q-ico">'+p.ico+'</span><div class="q-txt">'+p.q+'</div></div>'
+      +'<div class="q-det">'+p.det+'</div>'
+      +'<div class="q-btns">'
+      +'<button class="qb sim'+(a==='sim'?' sel':'')+'" onclick="ans(\''+p.id+'\',\'sim\')">✅ Sim</button>'
+      +'<button class="qb nao'+(a==='nao'?' sel':'')+'" onclick="ans(\''+p.id+'\',\'nao\')">❌ Não</button>'
+      +'</div>'
+      +'<div class="q-fb fb-s"><div class="fb-t">Por que está bom:</div>'+p.sim+'</div>'
+      +'<div class="q-fb fb-n"><div class="fb-t">Como melhorar:</div>'+p.nao+'</div>'
+      +'</div>';
+  });
+  document.getElementById('qWrap').innerHTML=html;
+  atualizar();
+}
+function ans(id,v){resp[id]=v;render();var nx=Q.find(function(p){return !resp[p.id]});if(nx){var el=document.getElementById('qc_'+nx.id);if(el)setTimeout(function(){el.scrollIntoView({behavior:'smooth',block:'center'})},80)}}
+function atualizar(){
+  var n=Object.keys(resp).length,score=0,maxS=Q.reduce(function(s,p){return s+p.pts},0);
+  Q.forEach(function(p){if(resp[p.id]==='sim')score+=p.pts});
+  var pct=Math.round((score/maxS)*100);
+  document.getElementById('progTxt').textContent=n+' de '+TOTAL+' respondidas';
+  document.getElementById('rpFill').style.width=pct+'%';
+  var circ=2*Math.PI*46;
+  document.getElementById('rFg').style.strokeDashoffset=circ-(pct/100)*circ;
+  document.getElementById('rFg').style.strokeDasharray=circ;
+  document.getElementById('rNum').textContent=pct;
+  var c=cls(pct),b=document.getElementById('resBadge');
+  b.textContent=c.e+' '+c.l;b.style.background=c.bg;b.style.color=c.co;
+  document.getElementById('rFg').style.stroke=c.st;
+  if(n===0){document.getElementById('tipsBox').innerHTML='<div style="color:var(--text3);font-size:.78rem;text-align:center;padding:8px">Responda as perguntas para ver feedback.</div>'}
+  else{
+    var nao=Q.filter(function(p){return resp[p.id]==='nao'}),sim=Q.filter(function(p){return resp[p.id]==='sim'}),h='';
+    if(nao.length){h+='<div style="font-weight:700;font-size:.79rem;color:var(--red);margin-bottom:7px">🚨 Precisa melhorar ('+nao.length+'):</div>';nao.forEach(function(p){h+='<div class="tip"><div class="tip-dot" style="background:var(--red)"></div><div><strong>'+p.ico+' '+p.q.replace('?','')+':</strong><br>'+p.nao.replace('❌ ','')+'</div></div>'})}
+    if(sim.length&&n>=5){h+='<div style="font-weight:700;font-size:.79rem;color:var(--green);margin-top:'+(nao.length?'11px':'0')+';margin-bottom:7px">✅ Pontos bons ('+sim.length+'):</div>';sim.slice(0,3).forEach(function(p){h+='<div class="tip"><div class="tip-dot" style="background:var(--green)"></div><div>'+p.sim.replace('✅ ','')+'</div></div>'})}
+    document.getElementById('tipsBox').innerHTML=h||'<div style="color:var(--text3);font-size:.78rem;text-align:center">Continue respondendo...</div>';
+  }
+  document.getElementById('btnSalvar').disabled=(n<5);
+}
+function cls(pct){
+  if(pct>=80)return{l:'Excelente!',e:'🏆',bg:'var(--green-l)',co:'var(--green)',st:'#276245'};
+  if(pct>=60)return{l:'Bom',e:'👍',bg:'var(--blue-l)',co:'var(--blue)',st:'#1A4FA8'};
+  if(pct>=40)return{l:'Regular',e:'⚠️',bg:'var(--amber-l)',co:'var(--amber)',st:'#A85C14'};
+  return{l:'Precisa melhorar',e:'🚨',bg:'var(--red-l)',co:'var(--red)',st:'#A81C1C'};
+}
+async function salvar(){
+  var n=Object.keys(resp).length;if(n<5){showToast('⚠️ Responda pelo menos 5 perguntas.');return}
+  var score=0,maxS=Q.reduce(function(s,p){return s+p.pts},0);
+  Q.forEach(function(p){if(resp[p.id]==='sim')score+=p.pts});
+  var pct=Math.round((score/maxS)*100);
+  var r=await fetch('/checklist/salvar',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({respostas:resp,pontuacao:pct})});
+  var d=await r.json();
+  if(d.ok){showToast('✅ Análise salva! '+d.classificacao);setTimeout(function(){location.reload()},1500)}
+}
+function resetar(){resp={};render();showToast('🔄 Novo checklist!')}
+render();
+</script>
+{% endblock %}

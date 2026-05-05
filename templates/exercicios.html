@@ -1,0 +1,221 @@
+{% extends "layout.html" %}
+{% set active = 'exercicios' %}
+{% block title %}Exercícios — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar">
+  <div><h2>Exercícios 🏋️</h2><div class="sub">Vídeos passo a passo — faça na sua cadeira</div></div>
+  <div class="topbar-actions"><button class="btn btn-green" onclick="iniciarSerie()">▶ Série completa</button></div>
+</div>
+{% endblock %}
+{% block head %}
+<style>
+.serie-bar{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:13px 18px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:16px;box-shadow:var(--shadow)}
+.sb-s{text-align:center;flex-shrink:0}.sb-v{font-size:1.3rem;font-weight:800;display:block;line-height:1}.sb-l{font-size:.68rem;color:var(--text2);text-transform:uppercase}
+.prog-bg{background:var(--bg2);border-radius:6px;height:7px;overflow:hidden;margin-top:4px}
+.prog-fill{height:100%;background:var(--green);border-radius:6px;transition:width .4s}
+.cats{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.cat-btn{padding:7px 13px;border-radius:20px;border:1.5px solid var(--border);background:var(--card);font-size:.79rem;font-weight:600;cursor:pointer;transition:all .15s;min-height:36px;-webkit-tap-highlight-color:transparent}
+.cat-btn.on,.cat-btn:active{background:var(--ink);color:#fff;border-color:var(--ink)}
+.ex-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:12px}
+@media(max-width:480px){.ex-grid{grid-template-columns:1fr}}
+.ex-card{background:var(--card);border:1.5px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;-webkit-tap-highlight-color:transparent}
+@media(hover:hover){.ex-card:hover:not(.done){transform:translateY(-2px);box-shadow:var(--shadow-lg)}}
+.ex-card:active{transform:scale(.98)}
+.ex-card.done{opacity:.6;border-color:var(--green)}
+.ex-thumb{position:relative;background:var(--ink);aspect-ratio:16/9;cursor:pointer;overflow:hidden}
+.ex-emoji{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3.2rem}
+.ex-play-btn{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.25)}
+.ex-play-cir{width:50px;height:50px;background:rgba(255,255,255,.9);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;transition:transform .18s}
+.ex-thumb:hover .ex-play-cir{transform:scale(1.1)}
+.done-mk{position:absolute;top:7px;right:7px;background:var(--green);color:#fff;border-radius:20px;padding:2px 8px;font-size:.66rem;font-weight:700}
+.ex-body{padding:12px}
+.ex-name{font-weight:800;font-size:.9rem;margin-bottom:4px}
+.ex-desc{font-size:.75rem;color:var(--text2);line-height:1.5;margin-bottom:8px}
+.ex-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px}
+.ex-tag{background:var(--bg2);color:var(--text2);padding:2px 7px;border-radius:11px;font-size:.68rem;font-weight:600}
+.ex-btns{display:flex;gap:6px}
+/* Modal exercício */
+.em-hdr{display:flex;align-items:flex-start;gap:11px;margin-bottom:14px}
+.em-ico{font-size:2rem}
+.yt-wrap{position:relative;width:100%;border-radius:10px;overflow:hidden;background:#000;aspect-ratio:16/9;margin-bottom:12px}
+.yt-frame{width:100%;height:100%;border:none;display:block}
+.steps{counter-reset:s;margin-bottom:14px}
+.step{display:flex;gap:9px;padding:8px 0;border-bottom:1px solid var(--bg2);font-size:.82rem;line-height:1.5}
+.step:last-child{border:none;padding-bottom:0}
+.step-n{width:21px;height:21px;border-radius:50%;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.68rem;font-weight:800;flex-shrink:0;margin-top:1px}
+/* Timer modal */
+.t-modal{text-align:center}
+.t-step{font-size:.74rem;color:var(--text2);margin-bottom:7px;font-weight:600}
+.t-ico{font-size:2.8rem;display:block;margin-bottom:7px}
+.t-name{font-size:1.25rem;font-weight:800;margin-bottom:4px}
+.t-desc{font-size:.8rem;color:var(--text2);line-height:1.5;margin-bottom:12px}
+.t-num{font-size:4.2rem;font-weight:800;line-height:1;color:var(--ink);font-variant-numeric:tabular-nums}
+.t-lbl{font-size:.74rem;color:var(--text2);margin-bottom:12px}
+.t-prog{background:var(--bg2);border-radius:7px;height:7px;overflow:hidden;margin-bottom:16px}
+.t-bar{height:100%;background:var(--green);border-radius:7px;transition:width .9s linear}
+.t-btns{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+</style>
+{% endblock %}
+{% block content %}
+<div class="serie-bar">
+  <div class="sb-s"><span class="sb-v" id="sbD">0</span><span class="sb-l">Feitos</span></div>
+  <div class="sb-s"><span class="sb-v">12</span><span class="sb-l">Total</span></div>
+  <div class="sb-s"><span class="sb-v">~8 min</span><span class="sb-l">Estimado</span></div>
+  <div style="flex:1;min-width:120px"><div style="font-size:.73rem;font-weight:700">Progresso</div><div class="prog-bg"><div class="prog-fill" id="pFill" style="width:0%"></div></div></div>
+  <button class="btn btn-ghost btn-sm" onclick="resetarSerie()">🔄 Reiniciar</button>
+</div>
+<div class="cats">
+  <button class="cat-btn on" onclick="filtrar('todos',this)">Todos</button>
+  <button class="cat-btn" onclick="filtrar('pescoco',this)">🧠 Pescoço</button>
+  <button class="cat-btn" onclick="filtrar('ombros',this)">💪 Ombros</button>
+  <button class="cat-btn" onclick="filtrar('coluna',this)">🔄 Coluna</button>
+  <button class="cat-btn" onclick="filtrar('punhos',this)">🤲 Punhos</button>
+  <button class="cat-btn" onclick="filtrar('olhos',this)">👁️ Olhos</button>
+  <button class="cat-btn" onclick="filtrar('pernas',this)">🦵 Pernas</button>
+</div>
+<div class="ex-grid" id="exGrid"></div>
+
+<!-- Modal: vídeo + passos -->
+<div class="overlay center hidden" id="modalEx">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="fecharEx()">✕</button>
+    <div class="em-hdr"><span class="em-ico" id="mIco">🏋️</span><div><h3 id="mNome">—</h3><div style="font-size:.77rem;color:var(--text2)" id="mInfo">—</div></div></div>
+    <div class="yt-wrap"><iframe class="yt-frame" id="ytFrame" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowfullscreen loading="lazy"></iframe></div>
+    <div style="font-size:.81rem;color:var(--text2);line-height:1.55;margin-bottom:12px" id="mDesc">—</div>
+    <div style="font-weight:700;font-size:.84rem;margin-bottom:7px">📋 Passo a passo:</div>
+    <div class="steps" id="mSteps"></div>
+    <div style="display:flex;gap:8px;margin-top:8px">
+      <button class="btn btn-green btn-full" onclick="iniciarUm(curEx)">⏱️ Iniciar com timer</button>
+      <button class="btn btn-ghost" onclick="fecharEx()">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: timer -->
+<div class="overlay center hidden" id="modalTimer">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-handle"></div>
+    <button class="modal-close" onclick="sairTimer()">✕</button>
+    <div class="t-modal">
+      <div class="t-step" id="tStep">—</div>
+      <span class="t-ico" id="tIco">🏋️</span>
+      <div class="t-name" id="tName">—</div>
+      <div class="t-desc" id="tDesc">—</div>
+      <div class="t-num" id="tNum">30</div>
+      <div class="t-lbl">segundos restantes</div>
+      <div class="t-prog"><div class="t-bar" id="tBar" style="width:100%"></div></div>
+      <div class="t-btns">
+        <button class="btn btn-ghost" id="btnPause" onclick="pausar()">⏸ Pausar</button>
+        <button class="btn btn-ink" onclick="pular()">Próximo →</button>
+        <button class="btn btn-ghost btn-sm" onclick="sairTimer()">Sair</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+// YouTube IDs: vídeos públicos educativos sobre alongamento
+var EX=[
+  {id:1,cat:'pescoco',ico:'🧠',name:'Rotação de Pescoço',yt:'Kz6pnT3BMQE',rep:'8x/lado',dur:40,ben:'Alivia tensão cervical',
+   desc:'Gire lentamente a cabeça para direita e esquerda. Mantenha os ombros relaxados.',
+   steps:['Sente-se ereto com ombros relaxados.','Gire lentamente a cabeça para a direita até o limite confortável.','Segure 2 segundos e volte ao centro.','Repita para o lado esquerdo.','Faça 8 repetições para cada lado.']},
+  {id:2,cat:'pescoco',ico:'↔️',name:'Inclinação Lateral',yt:'O1V4tFt9kOk',rep:'5x/lado',dur:35,ben:'Estica lado do pescoço',
+   desc:'Incline a cabeça ao ombro esticando o lado oposto do pescoço.',
+   steps:['Sente-se ereto e olhe para a frente.','Incline a cabeça ao ombro direito lentamente.','Segure 5 segundos sentindo o alongamento.','Volte ao centro e repita para o outro lado.','Faça 5 repetições para cada lado.']},
+  {id:3,cat:'ombros',ico:'🔄',name:'Rotação de Ombros',yt:'P2BqrEz7Jck',rep:'10 círculos',dur:30,ben:'Libera tensão dos ombros',
+   desc:'Círculos amplos com os ombros liberam tensão de digitar por horas.',
+   steps:['Sente-se ereto com braços ao longo do corpo.','Eleve os ombros em direção às orelhas.','Role-os para trás e para baixo em círculo.','Faça 5 círculos para trás.','Repita 5 círculos para frente. Respire fundo.']},
+  {id:4,cat:'ombros',ico:'🦅',name:'Abertura de Peito',yt:'3Sfl1UQJzWI',rep:'3x de 10s',dur:45,ben:'Corrige postura fechada',
+   desc:'Abre o peito e corrige a postura encurvada de quem trabalha muito no computador.',
+   steps:['Sente-se na borda da cadeira.','Entrelace os dedos atrás das costas.','Empurre as mãos para baixo e abra o peito.','Puxe os ombros para trás e segure 10s.','Repita 3 vezes. Respire profundamente.']},
+  {id:5,cat:'coluna',ico:'🌀',name:'Torção de Coluna',yt:'XVCBPe_mYxE',rep:'3x/lado',dur:60,ben:'Mobiliza coluna torácica',
+   desc:'Mobiliza a coluna torácica e alivia rigidez de ficar muito tempo sentado.',
+   steps:['Sente-se ereto com pés apoiados no chão.','Coloque a mão direita no encosto à esquerda.','Gire o tronco lentamente para a esquerda.','Segure 10 segundos olhando para trás.','Volte e repita para o outro lado. Faça 3x.']},
+  {id:6,cat:'coluna',ico:'🙆',name:'Extensão Lombar',yt:'oPvBf-0hfEQ',rep:'5 reps',dur:40,ben:'Alivia lombar comprimida',
+   desc:'Contra-postura para a curvatura que adotamos ao sentar por horas.',
+   steps:['Sente-se na borda da cadeira, pés bem apoiados.','Coloque as mãos na lombar (parte baixa das costas).','Incline suavemente o tronco para trás.','Segure 5 segundos e sinta o alongamento.','Volte devagar. Repita 5 vezes.']},
+  {id:7,cat:'punhos',ico:'🤲',name:'Rotação de Pulsos',yt:'9WLqOq-IhV0',rep:'10 círculos',dur:30,ben:'Previne LER/DORT',
+   desc:'Previne síndrome do túnel do carpo e tendinite em quem digita muito.',
+   steps:['Estenda os dois braços à frente com palmas para baixo.','Feche as mãos levemente em punho.','Faça 5 círculos lentos com os pulsos para dentro.','Faça 5 círculos para fora.','Abra e feche os dedos 5 vezes ao final.']},
+  {id:8,cat:'punhos',ico:'🖐️',name:'Alongamento de Dedos',yt:'GBgLV5hAqhM',rep:'3x/mão',dur:35,ben:'Relaxa tendões',
+   desc:'Relaxa os tendões dos dedos sobrecarregados pela digitação.',
+   steps:['Estenda o braço direito com palma voltada para frente.','Com a mão esquerda puxe os dedos gentilmente para trás.','Segure 5 segundos sentindo o alongamento no antebraço.','Repita apontando os dedos para baixo.','Troque de mão e repita.']},
+  {id:9,cat:'olhos',ico:'👁️',name:'Regra 20-20-20',yt:'dONGPT3Yfvk',rep:'20 segundos',dur:25,ben:'Reduz fadiga visual',
+   desc:'A cada 20 min olhe para algo a 6m por 20 segundos. Reduz fadiga visual.',
+   steps:['Pare de olhar para a tela.','Encontre objeto a pelo menos 6 metros de distância.','Foque nesse objeto por 20 segundos.','Pisque 10 vezes lentamente para lubrificar os olhos.','Faça isso a cada 20 min de tela.']},
+  {id:10,cat:'olhos',ico:'🔭',name:'Foco Próximo e Distante',yt:'Bn2o2moIIYQ',rep:'10 ciclos',dur:25,ben:'Exercita músculos oculares',
+   desc:'Exercita os músculos do olho tensionados pelo uso constante de telas.',
+   steps:['Estenda o polegar a 30 cm do rosto.','Foque no polegar por 2 segundos.','Mude o foco para objeto distante (3+ metros) por 2 segundos.','Alterne rápido entre perto e longe.','Faça 10 ciclos. Pisque no final.']},
+  {id:11,cat:'pernas',ico:'🦵',name:'Elevação de Pernas',yt:'p22OFBZBm90',rep:'8x/perna',dur:50,ben:'Ativa circulação',
+   desc:'Ativa a circulação nas pernas sem sair da cadeira.',
+   steps:['Sente-se ereto com pés apoiados no chão.','Estenda a perna direita horizontalmente.','Segure 5 segundos contraindo a coxa.','Abaixe lentamente e repita com a esquerda.','Faça 8 repetições para cada perna.']},
+  {id:12,cat:'pernas',ico:'💃',name:'Marcha Sentada',yt:'Mvo2snJGhtM',rep:'30 segundos',dur:35,ben:'Ativa core e pernas',
+   desc:'Simula caminhar sem sair da cadeira. Ativa core e circulação.',
+   steps:['Sente-se na borda da cadeira com costas eretas.','Eleve o joelho direito como se marchasse.','Abaixe e eleve o esquerdo alternadamente.','Mantenha ritmo moderado por 30 segundos.','Descanse 10 segundos. Repita se quiser.']},
+];
+var done=new Set(JSON.parse(localStorage.getItem('ergo_done')||'[]'));
+var catA='todos',queue=[],qIdx=0,curEx=null;
+var tSecs=0,tTot=0,tPaused=false,tid=null;
+
+function filtrar(c,el){catA=c;document.querySelectorAll('.cat-btn').forEach(function(b){b.classList.remove('on')});el.classList.add('on');renderGrid()}
+function renderGrid(){
+  var list=catA==='todos'?EX:EX.filter(function(e){return e.cat===catA});
+  document.getElementById('exGrid').innerHTML=list.map(function(e){
+    return '<div class="ex-card'+(done.has(e.id)?' done':'')+'" id="ec_'+e.id+'">'
+      +'<div class="ex-thumb" onclick="abrirEx('+e.id+')">'
+      +'<div class="ex-emoji">'+e.ico+'</div>'
+      +'<div class="ex-play-btn"><div class="ex-play-cir">▶</div></div>'
+      +(done.has(e.id)?'<div class="done-mk">✓ Feito</div>':'')
+      +'</div><div class="ex-body">'
+      +'<div class="ex-name">'+e.name+'</div>'
+      +'<div class="ex-desc">'+e.desc+'</div>'
+      +'<div class="ex-tags"><span class="ex-tag">⏱ '+e.dur+'s</span><span class="ex-tag">'+e.rep+'</span><span class="ex-tag">💪 '+e.ben+'</span></div>'
+      +'<div class="ex-btns">'
+      +'<button class="btn btn-ghost btn-sm" style="flex:1" onclick="abrirEx('+e.id+')">📹 Ver vídeo</button>'
+      +'<button class="btn btn-green btn-sm" onclick="iniciarUm('+e.id+')">⏱ Timer</button>'
+      +'</div></div></div>';
+  }).join('');
+  document.getElementById('sbD').textContent=done.size;
+  document.getElementById('pFill').style.width=(done.size/EX.length*100)+'%';
+}
+function abrirEx(id){
+  var e=EX.find(function(x){return x.id===id});if(!e)return;
+  curEx=id;
+  document.getElementById('mIco').textContent=e.ico;
+  document.getElementById('mNome').textContent=e.name;
+  document.getElementById('mInfo').textContent=e.cat+' • '+e.rep+' • '+e.dur+'s';
+  document.getElementById('mDesc').textContent=e.desc;
+  // YouTube embed com playsinline para mobile
+  document.getElementById('ytFrame').src='https://www.youtube.com/embed/'+e.yt+'?rel=0&modestbranding=1&playsinline=1';
+  document.getElementById('mSteps').innerHTML=e.steps.map(function(s,i){
+    return '<div class="step"><div class="step-n">'+(i+1)+'</div><div>'+s+'</div></div>';
+  }).join('');
+  document.getElementById('modalEx').classList.remove('hidden');
+}
+function fecharEx(){document.getElementById('modalEx').classList.add('hidden');document.getElementById('ytFrame').src=''}
+function iniciarUm(id){fecharEx();queue=[EX.find(function(e){return e.id===id})];qIdx=0;mostrarTimer()}
+function iniciarSerie(){queue=EX.slice();qIdx=0;mostrarTimer()}
+function mostrarTimer(){
+  if(qIdx>=queue.length){sairTimer();showToast('🎉 Série concluída! Parabéns!');return}
+  var e=queue[qIdx];
+  document.getElementById('tStep').textContent='Exercício '+(qIdx+1)+' de '+queue.length;
+  document.getElementById('tIco').textContent=e.ico;
+  document.getElementById('tName').textContent=e.name;
+  document.getElementById('tDesc').textContent=e.steps[0];
+  tTot=e.dur;tSecs=e.dur;tPaused=false;
+  document.getElementById('btnPause').textContent='⏸ Pausar';
+  document.getElementById('modalTimer').classList.remove('hidden');
+  renderT();clearInterval(tid);
+  tid=setInterval(function(){if(tPaused)return;tSecs--;renderT();if(tSecs<=0){clearInterval(tid);concluir(queue[qIdx].id);setTimeout(function(){qIdx++;mostrarTimer()},700)}},1000);
+}
+function renderT(){document.getElementById('tNum').textContent=tSecs;document.getElementById('tBar').style.width=(tSecs/tTot*100)+'%'}
+function pausar(){tPaused=!tPaused;document.getElementById('btnPause').textContent=tPaused?'▶ Continuar':'⏸ Pausar'}
+function pular(){clearInterval(tid);if(queue[qIdx])concluir(queue[qIdx].id);qIdx++;mostrarTimer()}
+function sairTimer(){clearInterval(tid);document.getElementById('modalTimer').classList.add('hidden');renderGrid()}
+function concluir(id){done.add(id);localStorage.setItem('ergo_done',JSON.stringify([...done]))}
+function resetarSerie(){done.clear();localStorage.removeItem('ergo_done');renderGrid();showToast('🔄 Série reiniciada!')}
+renderGrid();
+</script>
+{% endblock %}
