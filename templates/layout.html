@@ -20,6 +20,7 @@
     <a href="/midias"     class="sb-link {% if active=='midias'     %}active{% endif %}"><span class="sb-icon">📎</span><span class="sb-txt">Mídias</span></a>
     <a href="/estudos"    class="sb-link {% if active=='estudos'    %}active{% endif %}"><span class="sb-icon">📚</span><span class="sb-txt">Estudos</span></a>
     <a href="/perfil"     class="sb-link {% if active=='perfil'     %}active{% endif %}"><span class="sb-icon">👤</span><span class="sb-txt">Perfil</span></a>
+    {% if user.is_admin %}<a href="/admin" class="sb-link {% if active=='admin' %}active{% endif %}" style="color:#f59e0b"><span class="sb-icon">🛡️</span><span class="sb-txt">Admin</span></a>{% endif %}
     <div class="sb-footer"><a href="/logout"><span class="sb-icon">↩</span><span>Sair</span></a></div>
   </nav>
 

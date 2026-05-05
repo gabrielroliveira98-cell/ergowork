@@ -1,0 +1,163 @@
+{% extends "layout.html" %}
+{% set active = 'admin' %}
+{% block title %}Admin — ErgoWork{% endblock %}
+{% block topbar %}
+<div class="topbar"><div><h2>Painel Admin 🛡️</h2><div class="sub">Visão completa de todos os usuários e dados</div></div></div>
+{% endblock %}
+{% block head %}
+<style>
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center}
+.stat-n{font-size:2rem;font-weight:800;color:var(--ink)}
+.stat-l{font-size:.78rem;color:var(--text2);margin-top:2px}
+.usr-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden}
+.usr-head{display:grid;grid-template-columns:40px 1fr auto auto auto;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .15s}
+.usr-head:hover{background:var(--bg2)}
+.usr-av{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:var(--ink);overflow:hidden}
+.usr-av img{width:100%;height:100%;object-fit:cover}
+.usr-name{font-weight:700;font-size:.9rem}
+.usr-email{font-size:.75rem;color:var(--text2)}
+.usr-badge{font-size:.7rem;padding:2px 8px;border-radius:20px;background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.usr-badge.admin{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.usr-body{display:none;border-top:1px solid var(--border);padding:16px}
+.usr-body.open{display:block}
+.sec-title{font-size:.8rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px}
+.sec-title:first-child{margin-top:0}
+.mini-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.mini-table th{text-align:left;padding:4px 8px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)}
+.mini-table td{padding:5px 8px;border-bottom:1px solid var(--bg2)}
+.mini-table tr:last-child td{border-bottom:none}
+.chevron{transition:transform .2s;font-size:.75rem;color:var(--text2)}
+.chevron.open{transform:rotate(180deg)}
+.usr-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bg2)}
+.btn-xs{padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-size:.75rem;cursor:pointer;font-weight:600}
+.btn-xs.danger{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
+.btn-xs.warn{background:#fef3c7;color:#92400e;border-color:#fcd34d}
+.empty-row{text-align:center;padding:10px;color:var(--text2);font-size:.8rem}
+@media(max-width:640px){.stats4{grid-template-columns:1fr 1fr}.usr-head{grid-template-columns:36px 1fr auto}}
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="stats4">
+  <div class="stat-card"><div class="stat-n">{{ stats.usuarios }}</div><div class="stat-l">Usuários cadastrados</div></div>
+  <div class="stat-card"><div class="stat-n">{{ stats.pontos }}</div><div class="stat-l">Registros de ponto</div></div>
+  <div class="stat-card"><div class="stat-n">{{ stats.checklists }}</div><div class="stat-l">Checklists realizados</div></div>
+  <div class="stat-card"><div class="stat-n">{{ stats.midias }}</div><div class="stat-l">Mídias enviadas</div></div>
+</div>
+
+{% for d in dados %}
+{% set u = d.user %}
+<div class="usr-card">
+  <div class="usr-head" onclick="tog({{ u.id }})">
+    <div class="usr-av">
+      {% if u.foto_perfil %}<img src="{{ u.foto_perfil }}" alt="">{% else %}{{ u.nome[0].upper() }}{% endif %}
+    </div>
+    <div>
+      <div class="usr-name">{{ u.nome }}{% if u.is_admin %} <span style="font-size:.65rem;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;border:1px solid #fcd34d">Admin</span>{% endif %}</div>
+      <div class="usr-email">{{ u.email }} {% if u.cargo %}· {{ u.cargo }}{% endif %}</div>
+    </div>
+    <span style="font-size:.75rem;color:var(--text2);white-space:nowrap">📅 {{ u.criado_em.strftime('%d/%m/%Y') }}</span>
+    <span style="font-size:.75rem;color:var(--text2);white-space:nowrap">
+      ⏱ {{ d.pontos|length }} pontos &nbsp; ✅ {{ d.checks|length }} checks
+    </span>
+    <span class="chevron" id="chev-{{ u.id }}">▼</span>
+  </div>
+
+  <div class="usr-body" id="body-{{ u.id }}">
+
+    <div class="sec-title">Registros de Ponto (últimos 30)</div>
+    {% if d.pontos %}
+    <div class="table-wrap">
+    <table class="mini-table">
+      <thead><tr><th>Data</th><th>Entrada</th><th>Almoço</th><th>Retorno</th><th>Saída</th><th>Total</th></tr></thead>
+      <tbody>
+      {% for p in d.pontos %}
+      <tr>
+        <td>{{ p.data.strftime('%d/%m/%Y') }}</td>
+        <td>{{ p.entrada.strftime('%H:%M') if p.entrada else '—' }}</td>
+        <td>{{ p.almoco.strftime('%H:%M') if p.almoco else '—' }}</td>
+        <td>{{ p.retorno.strftime('%H:%M') if p.retorno else '—' }}</td>
+        <td>{{ p.saida.strftime('%H:%M') if p.saida else '—' }}</td>
+        <td>{% if p.saida %}<span class="badge badge-green">{{ p.total_fmt }}</span>{% elif p.entrada %}<span class="badge badge-blue">Em curso</span>{% else %}—{% endif %}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}<div class="empty-row">Nenhum registro de ponto ainda.</div>{% endif %}
+
+    <div class="sec-title">Checklists Ergonômicos (últimos 10)</div>
+    {% if d.checks %}
+    <table class="mini-table">
+      <thead><tr><th>Data</th><th>Pontuação</th><th>Classificação</th></tr></thead>
+      <tbody>
+      {% for c in d.checks %}
+      <tr>
+        <td>{{ c.data.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td><strong>{{ c.pontuacao }}%</strong></td>
+        <td><span class="badge {% if c.classificacao == 'Excelente' %}badge-green{% elif c.classificacao == 'Bom' %}badge-blue{% elif c.classificacao == 'Regular' %}badge-amber{% else %}badge-red{% endif %}">{{ c.classificacao }}</span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% else %}<div class="empty-row">Nenhum checklist realizado ainda.</div>{% endif %}
+
+    {% if d.midias %}
+    <div class="sec-title">Mídias ({{ d.midias|length }})</div>
+    <table class="mini-table">
+      <thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Data</th></tr></thead>
+      <tbody>
+      {% for m in d.midias %}
+      <tr>
+        <td>{{ m.nome }}</td>
+        <td><span class="badge">{{ m.tipo }}</span></td>
+        <td style="color:var(--text2)">{{ (m.tamanho/1024/1024)|round(1) }} MB</td>
+        <td>{{ m.data_upload.strftime('%d/%m/%Y') }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+
+    <div class="usr-actions">
+      {% if not u.is_admin %}
+      <button class="btn-xs warn" onclick="promover({{ u.id }}, this)">Tornar Admin</button>
+      {% else %}
+      <button class="btn-xs" onclick="promover({{ u.id }}, this)">Remover Admin</button>
+      {% endif %}
+      {% if u.email not in ['gabrielroliveira98@gmail.com', 'demo@ergo.com'] %}
+      <button class="btn-xs danger" onclick="excluir({{ u.id }}, '{{ u.nome }}')">Excluir usuário</button>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% if not dados %}
+<div class="card" style="text-align:center;padding:40px"><p style="color:var(--text2)">Nenhum usuário cadastrado ainda.</p></div>
+{% endif %}
+
+{% endblock %}
+{% block scripts %}
+<script>
+function tog(id){
+  var b=document.getElementById('body-'+id);
+  var c=document.getElementById('chev-'+id);
+  b.classList.toggle('open');
+  c.classList.toggle('open');
+}
+async function promover(id, btn){
+  var r=await fetch('/admin/promover/'+id,{method:'POST'});
+  var d=await r.json();
+  if(d.ok){showToast(d.is_admin?'Admin concedido!':'Admin removido!');setTimeout(function(){location.reload()},1200)}
+}
+async function excluir(id, nome){
+  if(!confirm('Excluir usuário '+nome+'? Esta ação não pode ser desfeita.'))return;
+  var r=await fetch('/admin/excluir_usuario/'+id,{method:'POST'});
+  var d=await r.json();
+  if(d.ok){showToast('Usuário excluído.');setTimeout(function(){location.reload()},1200)}
+  else showToast('Erro: '+d.erro);
+}
+</script>
+{% endblock %}

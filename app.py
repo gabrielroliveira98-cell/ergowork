@@ -30,6 +30,8 @@ db = SQLAlchemy(app)
 
 # ─────────────── MODELOS ────────────────────────────────────────
 
+ADMIN_EMAILS = {'gabrielroliveira98@gmail.com'}
+
 class User(db.Model):
     id          = db.Column(db.Integer, primary_key=True)
     nome        = db.Column(db.String(100), nullable=False)
@@ -38,6 +40,7 @@ class User(db.Model):
     cargo       = db.Column(db.String(100), default='')
     foto_perfil = db.Column(db.Text, default='')
     google_id   = db.Column(db.String(200), default='')
+    is_admin    = db.Column(db.Boolean, default=False)
     criado_em   = db.Column(db.DateTime, default=datetime.utcnow)
     pontos     = db.relationship('RegistroPonto', backref='usuario', lazy=True, cascade='all,delete')
     checklists = db.relationship('ChecklistErgo', backref='usuario', lazy=True, cascade='all,delete')
@@ -99,6 +102,18 @@ def login_required(f):
     def deco(*a, **kw):
         if 'user_id' not in session:
             return redirect(url_for('login'))
+        return f(*a, **kw)
+    return deco
+
+def admin_required(f):
+    from functools import wraps
+    @wraps(f)
+    def deco(*a, **kw):
+        if 'user_id' not in session:
+            return redirect(url_for('login'))
+        u = current_user()
+        if not u or not u.is_admin:
+            return redirect(url_for('dashboard'))
         return f(*a, **kw)
     return deco
 
@@ -349,10 +364,60 @@ def perfil():
             msg = 'ok:Perfil atualizado!'
     return render_template('perfil.html', user=u, msg=msg)
 
+@app.route('/admin')
+@admin_required
+def admin_panel():
+    u     = current_user()
+    users = User.query.order_by(User.criado_em.desc()).all()
+    stats = {
+        'usuarios':   User.query.count(),
+        'pontos':     RegistroPonto.query.count(),
+        'checklists': ChecklistErgo.query.count(),
+        'midias':     Midia.query.count(),
+    }
+    dados = []
+    for usr in users:
+        pontos  = RegistroPonto.query.filter_by(user_id=usr.id).order_by(RegistroPonto.data.desc()).limit(30).all()
+        checks  = ChecklistErgo.query.filter_by(user_id=usr.id).order_by(ChecklistErgo.data.desc()).limit(10).all()
+        midias  = Midia.query.filter_by(user_id=usr.id).order_by(Midia.data_upload.desc()).all()
+        dados.append({'user': usr, 'pontos': pontos, 'checks': checks, 'midias': midias})
+    return render_template('admin.html', user=u, stats=stats, dados=dados)
+
+@app.route('/admin/promover/<int:uid>', methods=['POST'])
+@admin_required
+def admin_promover(uid):
+    alvo = User.query.get_or_404(uid)
+    alvo.is_admin = not alvo.is_admin
+    db.session.commit()
+    return jsonify({'ok': True, 'is_admin': alvo.is_admin})
+
+@app.route('/admin/excluir_usuario/<int:uid>', methods=['POST'])
+@admin_required
+def admin_excluir_usuario(uid):
+    u = current_user()
+    if uid == u.id:
+        return jsonify({'ok': False, 'erro': 'Não pode excluir a si mesmo.'})
+    alvo = User.query.get_or_404(uid)
+    db.session.delete(alvo)
+    db.session.commit()
+    return jsonify({'ok': True})
+
 # ─────────────── INIT ────────────────────────────────────────────
 
 with app.app_context():
     db.create_all()
+    # migração: adiciona is_admin se não existir (SQLite não suporta IF NOT EXISTS)
+    try:
+        db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
+        db.session.commit()
+    except Exception:
+        pass
+    # garante que os emails admin tenham is_admin=True
+    for email in ADMIN_EMAILS:
+        adm = User.query.filter_by(email=email).first()
+        if adm and not adm.is_admin:
+            adm.is_admin = True
+            db.session.commit()
     if not User.query.first():
         demo = User(nome='Demo ErgoWork', email='demo@ergo.com',
                     senha_hash=generate_password_hash('1234'), cargo='Analista')
