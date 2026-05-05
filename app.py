@@ -231,10 +231,15 @@ def registrar_ponto():
     u = current_user()
     tipo = request.form.get('tipo','')
     foto = request.form.get('foto','')
-    agora = datetime.now()
-    h = ponto_hoje(u.id)
+    ts_str = request.form.get('ts','')
+    try:
+        agora = datetime.fromisoformat(ts_str) if ts_str else datetime.now()
+    except Exception:
+        agora = datetime.now()
+    hoje_data = agora.date()
+    h = RegistroPonto.query.filter_by(user_id=u.id, data=hoje_data).first()
     if not h:
-        h = RegistroPonto(user_id=u.id, data=date.today())
+        h = RegistroPonto(user_id=u.id, data=hoje_data)
         db.session.add(h)
     if   tipo=='entrada' and not h.entrada: h.entrada=agora; h.foto_entrada=foto
     elif tipo=='almoco'  and h.entrada and not h.almoco:  h.almoco=agora

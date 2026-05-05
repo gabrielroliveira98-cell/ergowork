@@ -126,8 +126,9 @@ setInterval(function(){
   if(el)el.textContent=('0'+h).slice(-2)+':'+('0'+m).slice(-2)+':'+('0'+s).slice(-2);
 },1000);
 {% endif %}
+function tsLocal(){var n=new Date();return n.getFullYear()+'-'+('0'+(n.getMonth()+1)).slice(-2)+'-'+('0'+n.getDate()).slice(-2)+'T'+('0'+n.getHours()).slice(-2)+':'+('0'+n.getMinutes()).slice(-2)+':'+('0'+n.getSeconds()).slice(-2)}
 async function reg(tipo){
-  var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tipo='+tipo});
+  var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'tipo='+tipo+'&ts='+encodeURIComponent(tsLocal())});
   var d=await r.json();
   if(d.ok){showToast('✓ '+tipo+' às '+d.hora);setTimeout(function(){location.reload()},1200)}else showToast('⚠️ '+d.erro);
 }
@@ -138,7 +139,7 @@ function fecharCam(){document.getElementById('modalCam').classList.add('hidden')
 function tirarFoto(){var v=document.getElementById('camV'),c=document.createElement('canvas');c.width=320;c.height=240;c.getContext('2d').drawImage(v,0,0,320,240);fotoB64=c.toDataURL('image/jpeg',.75);var s=document.getElementById('camS');s.src=fotoB64;s.style.display='block';v.style.display='none';document.getElementById('btnSnap').classList.add('hidden');document.getElementById('btnRetake').classList.remove('hidden');document.getElementById('btnConf').disabled=false}
 function retirarFoto(){document.getElementById('camS').style.display='none';document.getElementById('camV').style.display='block';document.getElementById('btnSnap').classList.remove('hidden');document.getElementById('btnRetake').classList.add('hidden');document.getElementById('btnConf').disabled=true;fotoB64=''}
 async function confirmar(){if(stream){stream.getTracks().forEach(function(t){t.stop()});stream=null}await regComFoto(fotoB64);fecharCam()}
-async function regComFoto(foto){var fd=new URLSearchParams({tipo:tipoA,foto:foto});var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd});var d=await r.json();if(d.ok){showToast('✓ '+tipoA+' às '+d.hora);setTimeout(function(){location.reload()},1300)}else showToast('⚠️ '+d.erro)}
+async function regComFoto(foto){var fd=new URLSearchParams({tipo:tipoA,foto:foto,ts:tsLocal()});var r=await fetch('/ponto/registrar',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:fd});var d=await r.json();if(d.ok){showToast('✓ '+tipoA+' às '+d.hora);setTimeout(function(){location.reload()},1300)}else showToast('⚠️ '+d.erro)}
 function abrirFoto(s){document.getElementById('fotoG').src=s;document.getElementById('fotoOv').classList.remove('hidden')}
 </script>
 {% endblock %}
