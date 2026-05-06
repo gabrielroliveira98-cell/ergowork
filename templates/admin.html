@@ -12,6 +12,7 @@
 .stat-l{font-size:.78rem;color:var(--text2);margin-top:2px}
 .usr-card{background:var(--card);border:1px solid var(--border);border-radius:14px;margin-bottom:12px;overflow:hidden}
 .usr-head{display:grid;grid-template-columns:40px 1fr auto auto auto;align-items:center;gap:12px;padding:14px 16px;cursor:pointer;transition:background .15s}
+@media(max-width:560px){.usr-head{grid-template-columns:36px 1fr auto}.usr-head .usr-date,.usr-head .usr-stats{display:none}}
 .usr-head:hover{background:var(--bg2)}
 .usr-av{width:36px;height:36px;border-radius:50%;object-fit:cover;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;color:var(--ink);overflow:hidden}
 .usr-av img{width:100%;height:100%;object-fit:cover}
@@ -23,7 +24,8 @@
 .usr-body.open{display:block}
 .sec-title{font-size:.8rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.05em;margin:12px 0 6px}
 .sec-title:first-child{margin-top:0}
-.mini-table{width:100%;border-collapse:collapse;font-size:.8rem}
+.mini-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.mini-table{width:100%;border-collapse:collapse;font-size:.8rem;white-space:nowrap}
 .mini-table th{text-align:left;padding:4px 8px;color:var(--text2);font-weight:600;border-bottom:1px solid var(--border)}
 .mini-table td{padding:5px 8px;border-bottom:1px solid var(--bg2)}
 .mini-table tr:last-child td{border-bottom:none}
@@ -57,9 +59,9 @@
       <div class="usr-name">{{ u.nome }}{% if u.is_admin %} <span style="font-size:.65rem;background:#fef3c7;color:#92400e;padding:1px 6px;border-radius:10px;border:1px solid #fcd34d">Admin</span>{% endif %}</div>
       <div class="usr-email">{{ u.email }} {% if u.cargo %}· {{ u.cargo }}{% endif %}</div>
     </div>
-    <span style="font-size:.75rem;color:var(--text2);white-space:nowrap">📅 {{ u.criado_em.strftime('%d/%m/%Y') }}</span>
-    <span style="font-size:.75rem;color:var(--text2);white-space:nowrap">
-      ⏱ {{ d.pontos|length }} pontos &nbsp; ✅ {{ d.checks|length }} checks
+    <span class="usr-date" style="font-size:.75rem;color:var(--text2);white-space:nowrap">📅 {{ u.criado_em.strftime('%d/%m/%Y') }}</span>
+    <span class="usr-stats" style="font-size:.75rem;color:var(--text2);white-space:nowrap">
+      ⏱ {{ d.pontos|length }} &nbsp; ✅ {{ d.checks|length }}
     </span>
     <span class="chevron" id="chev-{{ u.id }}">▼</span>
   </div>
@@ -68,7 +70,7 @@
 
     <div class="sec-title">Registros de Ponto (últimos 30)</div>
     {% if d.pontos %}
-    <div class="table-wrap">
+    <div class="mini-wrap">
     <table class="mini-table">
       <thead><tr><th>Data</th><th>Entrada</th><th>Almoço</th><th>Retorno</th><th>Saída</th><th>Total</th></tr></thead>
       <tbody>
@@ -89,7 +91,7 @@
 
     <div class="sec-title">Checklists Ergonômicos (últimos 10)</div>
     {% if d.checks %}
-    <table class="mini-table">
+    <div class="mini-wrap"><table class="mini-table">
       <thead><tr><th>Data</th><th>Pontuação</th><th>Classificação</th></tr></thead>
       <tbody>
       {% for c in d.checks %}
@@ -100,12 +102,12 @@
       </tr>
       {% endfor %}
       </tbody>
-    </table>
+    </table></div>
     {% else %}<div class="empty-row">Nenhum checklist realizado ainda.</div>{% endif %}
 
     {% if d.midias %}
     <div class="sec-title">Mídias ({{ d.midias|length }})</div>
-    <table class="mini-table">
+    <div class="mini-wrap"><table class="mini-table">
       <thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Data</th></tr></thead>
       <tbody>
       {% for m in d.midias %}
@@ -117,7 +119,7 @@
       </tr>
       {% endfor %}
       </tbody>
-    </table>
+    </table></div>
     {% endif %}
 
     <div class="usr-actions">
