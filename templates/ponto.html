@@ -112,9 +112,9 @@
 function tic(){var n=new Date();document.getElementById('clockT').textContent=n.toLocaleTimeString('pt-BR');document.getElementById('clockD').textContent=n.toLocaleDateString('pt-BR',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}
 setInterval(tic,1000);tic();
 {% if hoje and hoje.entrada and not hoje.saida %}
-var _ent={{ (hoje.entrada.timestamp()*1000)|int }};
-var _almMs={% if hoje.almoco and not hoje.retorno %}{{ (hoje.almoco.timestamp()*1000)|int }}{% else %}0{% endif %};
-var _retMs={% if hoje.retorno %}{{ (hoje.retorno.timestamp()*1000)|int }}{% else %}0{% endif %};
+var _ent=new Date("{{ hoje.entrada.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime();
+var _almMs={% if hoje.almoco and not hoje.retorno %}new Date("{{ hoje.almoco.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime(){% else %}0{% endif %};
+var _retMs={% if hoje.retorno %}new Date("{{ hoje.retorno.strftime('%Y-%m-%dT%H:%M:%S') }}").getTime(){% else %}0{% endif %};
 var _pausaFixa=_retMs>0?(_retMs-_almMs):0;
 setInterval(function(){
   var now=Date.now();
