@@ -5,8 +5,6 @@
 body{background:var(--ink);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
 .box{background:var(--card);border-radius:20px;padding:32px 26px;width:100%;max-width:400px;box-shadow:var(--shadow-lg);animation:slideUp .3s}
 .logo-area{text-align:center;margin-bottom:26px}
-.logo-ico{font-size:2.8rem;display:block;margin-bottom:10px}
-.logo-area h1{font-size:1.75rem;font-weight:800;margin-bottom:4px}
 .logo-area p{color:var(--text2);font-size:.87rem}
 .err{background:var(--red-l);color:var(--red);border-radius:9px;padding:10px 14px;font-size:.83rem;font-weight:600;margin-bottom:14px}
 .info-msg{background:var(--blue-l);color:var(--blue);border-radius:9px;padding:10px 14px;font-size:.82rem;margin-bottom:14px}
@@ -24,8 +22,7 @@ body{background:var(--ink);display:flex;align-items:center;justify-content:cente
 {% block body %}
 <div class="box">
   <div class="logo-area">
-    <span class="logo-ico">🪑</span>
-    <h1>ErgoHome</h1>
+    <img src="/static/img/logo.png" alt="ErgoHome" style="width:160px;max-width:100%;height:auto;margin:0 auto 14px;display:block;border-radius:10px">
     <p>Ergonomia e saúde para home office</p>
   </div>
   {% if msg %}<div class="info-msg">ℹ️ {{ msg }}</div>{% endif %}
