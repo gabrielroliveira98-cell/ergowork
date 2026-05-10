@@ -14,7 +14,7 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-import os, json
+import base64, os, json
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'ergowork_2025_secret')
@@ -27,7 +27,7 @@ if _db_url.startswith('postgres://'):
     _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
+app.config['UPLOAD_FOLDER'] = os.path.join(_basedir, 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
@@ -178,7 +178,6 @@ def cadastro():
         u = User(nome=nome, email=email, senha_hash=generate_password_hash(senha), cargo=cargo)
         fp = request.files.get('foto_perfil')
         if fp and fp.filename:
-            import base64
             u.foto_perfil = 'data:' + fp.mimetype + ';base64,' + base64.b64encode(fp.read()).decode()
         db.session.add(u); db.session.commit()
         session.permanent = True
@@ -381,7 +380,6 @@ def perfil():
         if not msg:
             fp = request.files.get('foto_perfil')
             if fp and fp.filename:
-                import base64
                 u.foto_perfil = 'data:'+fp.mimetype+';base64,'+base64.b64encode(fp.read()).decode()
             db.session.commit()
             msg = 'ok:Perfil atualizado!'
@@ -415,22 +413,20 @@ def admin_pontos_dia():
     except ValueError:
         d = date.today()
     registros = RegistroPonto.query.filter_by(data=d).order_by(RegistroPonto.entrada).all()
+    user_ids = [r.user_id for r in registros]
+    users_map = {u.id: u for u in User.query.filter(User.id.in_(user_ids)).all()} if user_ids else {}
     resultado = []
     for r in registros:
-        u = User.query.get(r.user_id)
+        u = users_map.get(r.user_id)
         if not u:
             continue
-        fmt = lambda dt: dt.strftime('%H:%M') if dt else None
-        resultado.append({
-            'nome':    u.nome,
-            'cargo':   u.cargo or '—',
-            'entrada': fmt(r.entrada),
-            'almoco':  fmt(r.almoco),
-            'retorno': fmt(r.retorno),
-            'saida':   fmt(r.saida),
-            'total':   r.total_fmt if r.saida else ('Em curso' if r.entrada else '—'),
-            'status':  'completo' if r.saida else ('andamento' if r.entrada else 'ausente'),
-        })
+        entry = r.to_dict()
+        entry['nome']  = u.nome
+        entry['cargo'] = u.cargo or '—'
+        if not r.saida:
+            entry['total'] = 'Em curso' if r.entrada else '—'
+        entry['status'] = 'completo' if r.saida else ('andamento' if r.entrada else 'ausente')
+        resultado.append(entry)
     return jsonify({'ok': True, 'data_fmt': d.strftime('%d/%m/%Y'), 'registros': resultado})
 
 @app.route('/admin/promover/<int:uid>', methods=['POST'])
@@ -462,11 +458,14 @@ def _init_db():
             db.session.commit()
         except Exception:
             db.session.rollback()
+        changed = False
         for email in ADMIN_EMAILS:
             adm = User.query.filter_by(email=email).first()
             if adm and not adm.is_admin:
                 adm.is_admin = True
-                db.session.commit()
+                changed = True
+        if changed:
+            db.session.commit()
         if not User.query.first():
             demo = User(nome='Demo ErgoWork', email='demo@ergo.com',
                         senha_hash=generate_password_hash('1234'), cargo='Analista')
