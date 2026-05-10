@@ -33,10 +33,18 @@
 .chevron{transition:transform .2s;font-size:.75rem;color:var(--text2)}
 .chevron.open{transform:rotate(180deg)}
 .usr-actions{display:flex;gap:8px;margin-top:14px;padding-top:12px;border-top:1px solid var(--bg2)}
-.btn-xs{padding:4px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-size:.75rem;cursor:pointer;font-weight:600}
+.btn-xs{padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);font-size:.8rem;cursor:pointer;font-weight:600;min-height:40px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .btn-xs.danger{background:#fee2e2;color:#991b1b;border-color:#fca5a5}
 .btn-xs.warn{background:#fef3c7;color:#92400e;border-color:#fcd34d}
 .empty-row{text-align:center;padding:10px;color:var(--text2);font-size:.8rem}
+@media(max-width:560px){
+  .usr-head{padding:12px}
+  .usr-body{padding:12px}
+  .usr-actions{flex-wrap:wrap}
+  .usr-actions .btn-xs{flex:1;text-align:center}
+  .dia-row input[type=date]{min-width:0;width:100%}
+  .dia-box h3{font-size:.82rem}
+}
 @media(max-width:640px){.stats4{grid-template-columns:1fr 1fr}.usr-head{grid-template-columns:36px 1fr auto}}
 .dia-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;margin-bottom:20px}
 .dia-box h3{font-size:.9rem;font-weight:700;margin:0 0 12px}

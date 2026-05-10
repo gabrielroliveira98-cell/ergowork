@@ -37,6 +37,7 @@
       <a href="/midias"     class="bn-item {% if active=='midias'     %}active{% endif %}"><span class="bn-ico">📎</span>Mídias</a>
       <a href="/estudos"    class="bn-item {% if active=='estudos'    %}active{% endif %}"><span class="bn-ico">🦺</span>CIPA</a>
       <a href="/perfil"     class="bn-item {% if active=='perfil'     %}active{% endif %}"><span class="bn-ico">👤</span>Perfil</a>
+      {% if user.is_admin %}<a href="/admin" class="bn-item {% if active=='admin' %}active{% endif %}" style="color:#f59e0b"><span class="bn-ico">🛡️</span>Admin</a>{% endif %}
     </nav>
   </div>
 </div>

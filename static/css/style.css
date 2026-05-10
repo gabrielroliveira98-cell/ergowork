@@ -172,8 +172,9 @@ table.data tr:hover td{background:var(--bg2)}
 
 /* ── Bottom Nav (mobile) ───────────────── */
 .bottom-nav{display:none;position:fixed;bottom:0;left:0;right:0;height:var(--nav-h);background:var(--card);border-top:1px solid var(--border);z-index:60;padding-bottom:env(safe-area-inset-bottom,0)}
-.bottom-nav nav{display:flex;align-items:center;justify-content:space-around;height:100%}
-.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:none;border:none;color:var(--text3);font-size:.56rem;font-weight:600;text-transform:uppercase;letter-spacing:.2px;-webkit-tap-highlight-color:transparent;min-width:44px;flex:1;transition:color .15s}
+.bottom-nav nav{display:flex;align-items:center;justify-content:space-around;height:100%;overflow-x:auto;scrollbar-width:none}
+.bottom-nav nav::-webkit-scrollbar{display:none}
+.bn-item{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 4px;background:none;border:none;color:var(--text3);font-size:.56rem;font-weight:600;text-transform:uppercase;letter-spacing:.2px;-webkit-tap-highlight-color:transparent;min-width:44px;flex:1 0 auto;transition:color .15s}
 .bn-item .bn-ico{font-size:1.25rem;display:block}
 .bn-item.active{color:var(--green)}
 .bn-item:active{transform:scale(.9)}
