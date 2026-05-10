@@ -454,25 +454,29 @@ def admin_excluir_usuario(uid):
 
 # ─────────────── INIT ────────────────────────────────────────────
 
-with app.app_context():
-    db.create_all()
-    # migração: adiciona is_admin se não existir (SQLite não suporta IF NOT EXISTS)
+def _init_db():
     try:
-        db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
-        db.session.commit()
-    except Exception:
-        pass
-    # garante que os emails admin tenham is_admin=True
-    for email in ADMIN_EMAILS:
-        adm = User.query.filter_by(email=email).first()
-        if adm and not adm.is_admin:
-            adm.is_admin = True
+        db.create_all()
+        try:
+            db.session.execute(db.text('ALTER TABLE "user" ADD COLUMN is_admin BOOLEAN DEFAULT 0'))
             db.session.commit()
-    if not User.query.first():
-        demo = User(nome='Demo ErgoWork', email='demo@ergo.com',
-                    senha_hash=generate_password_hash('1234'), cargo='Analista')
-        db.session.add(demo); db.session.commit()
-        print('Usuario demo: demo@ergo.com / 1234')
+        except Exception:
+            db.session.rollback()
+        for email in ADMIN_EMAILS:
+            adm = User.query.filter_by(email=email).first()
+            if adm and not adm.is_admin:
+                adm.is_admin = True
+                db.session.commit()
+        if not User.query.first():
+            demo = User(nome='Demo ErgoWork', email='demo@ergo.com',
+                        senha_hash=generate_password_hash('1234'), cargo='Analista')
+            db.session.add(demo); db.session.commit()
+            print('Usuario demo: demo@ergo.com / 1234')
+    except Exception as e:
+        print(f'[WARN] init_db falhou (DB pode estar indisponivel): {e}')
+
+with app.app_context():
+    _init_db()
 
 if __name__ == '__main__':
     port  = int(os.environ.get('PORT', 5000))

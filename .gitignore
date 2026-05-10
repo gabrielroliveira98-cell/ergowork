@@ -8,5 +8,5 @@ venv/
 env/
 static/uploads/
 instance/
-*.txt
+cookies*.txt
 login_response.html
