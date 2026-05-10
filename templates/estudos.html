@@ -1,398 +1,676 @@
 {% extends "layout.html" %}
 {% set active = 'estudos' %}
-{% block title %}Estudos — ErgoWork{% endblock %}
+{% block title %}CIPA ONLINE — ErgoWork{% endblock %}
 {% block topbar %}
-<div class="topbar"><div><h2>Materiais de Estudo 📚</h2><div class="sub">Treinamentos e campanhas de segurança</div></div></div>
+<div class="topbar">
+  <div>
+    <h2>CIPA ONLINE 🦺</h2>
+    <div class="sub">Comissão Interna de Prevenção de Acidentes — Campanhas e Treinamentos</div>
+  </div>
+</div>
 {% endblock %}
 {% block head %}
 <style>
-.estudos-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr));gap:16px;margin-bottom:24px}
-.mat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
-.mat-header{padding:20px 20px 16px;display:flex;align-items:flex-start;gap:14px}
-.mat-ico{font-size:2.2rem;flex-shrink:0;line-height:1}
+/* ── Layout ── */
+.cipa-wrap{max-width:860px}
+.camp-badge{display:inline-flex;align-items:center;gap:7px;background:#fef3c7;color:#92400e;border:1.5px solid #fcd34d;border-radius:20px;padding:4px 13px;font-size:.75rem;font-weight:700;margin-bottom:18px}
+
+/* ── Card principal ── */
+.mat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}
+.mat-header{padding:22px 22px 16px;display:flex;align-items:flex-start;gap:16px;border-bottom:1px solid var(--border)}
+.mat-ico{font-size:2.6rem;flex-shrink:0;line-height:1}
 .mat-meta{flex:1}
-.mat-title{font-size:1rem;font-weight:800;margin-bottom:3px}
-.mat-sub{font-size:.76rem;color:var(--text2);line-height:1.4}
-.mat-tag{display:inline-block;font-size:.68rem;font-weight:700;padding:3px 9px;border-radius:20px;margin-top:6px}
-.tag-amber{background:var(--amber-l);color:var(--amber)}
-.tag-green{background:var(--green-l);color:var(--green)}
-.tag-blue {background:var(--blue-l);color:var(--blue)}
-.mat-body{padding:0 20px;flex:1}
+.mat-title{font-size:1.2rem;font-weight:800;margin-bottom:4px}
+.mat-sub{font-size:.8rem;color:var(--text2);line-height:1.45}
+.mat-tag{display:inline-block;font-size:.68rem;font-weight:700;padding:3px 10px;border-radius:20px;margin-top:7px;background:#fef3c7;color:#92400e}
+
+/* ── Stats ── */
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:16px 20px;border-bottom:1px solid var(--border)}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr 1fr}}
+.stat-pill{background:var(--bg2);border-radius:10px;padding:12px 8px;text-align:center}
+.stat-pill strong{display:block;font-size:1.15rem;font-weight:800;color:var(--ink)}
+.stat-pill span{font-size:.68rem;color:var(--text2);line-height:1.3;display:block;margin-top:2px}
+
+/* ── Acordeão ── */
+.mat-body{padding:0 20px}
 .acc-item{border-top:1px solid var(--border)}
 .acc-item:first-child{border-top:none}
-.acc-btn{width:100%;background:none;border:none;text-align:left;padding:12px 0;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.84rem;cursor:pointer;color:var(--text);gap:8px}
+.acc-btn{width:100%;background:none;border:none;text-align:left;padding:14px 0;display:flex;align-items:center;justify-content:space-between;font-weight:700;font-size:.87rem;cursor:pointer;color:var(--text);gap:10px}
 .acc-btn:hover{color:var(--ink)}
-.acc-arrow{font-size:.7rem;transition:transform .2s;flex-shrink:0}
-.acc-panel{display:none;padding-bottom:14px;font-size:.83rem;color:var(--text2);line-height:1.65}
-.acc-panel.open{display:block}
+.acc-arrow{font-size:.7rem;transition:transform .2s;flex-shrink:0;color:var(--text2)}
 .acc-arrow.open{transform:rotate(180deg)}
-.stat-row{display:flex;gap:10px;margin:12px 0;flex-wrap:wrap}
-.stat-pill{background:var(--bg2);border-radius:9px;padding:10px 14px;text-align:center;flex:1;min-width:80px}
-.stat-pill strong{display:block;font-size:1.1rem;font-weight:800}
-.stat-pill span{font-size:.7rem;color:var(--text2)}
-.tip-list{list-style:none;display:flex;flex-direction:column;gap:6px}
-.tip-list li{display:flex;align-items:flex-start;gap:8px;font-size:.83rem;color:var(--text2)}
+.acc-panel{display:none;padding-bottom:16px;font-size:.84rem;color:var(--text2);line-height:1.7}
+.acc-panel.open{display:block}
+.acc-panel strong{color:var(--text)}
+.acc-panel h4{font-size:.82rem;font-weight:700;color:var(--text);margin:12px 0 6px}
+
+/* ── Listas ── */
+.tip-list{list-style:none;display:flex;flex-direction:column;gap:7px;margin:8px 0}
+.tip-list li{display:flex;align-items:flex-start;gap:9px;font-size:.83rem;color:var(--text2);line-height:1.5}
 .tip-list li::before{content:'✓';color:var(--green);font-weight:800;flex-shrink:0;margin-top:1px}
-.tip-list.warn li::before{content:'✗';color:var(--red)}
-.mat-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;margin-top:10px}
-.prog-bar{height:5px;background:var(--bg2);border-radius:10px;overflow:hidden;flex:1;margin:0 10px}
-.prog-fill{height:100%;border-radius:10px;transition:width .4s}
-.read-btn{font-size:.76rem;font-weight:700;padding:6px 14px;border-radius:20px;border:none;cursor:pointer;transition:all .18s}
+.tip-list.num{counter-reset:tl}
+.tip-list.num li::before{counter-increment:tl;content:counter(tl);background:var(--ink);color:#fff;width:18px;height:18px;border-radius:50%;font-size:.65rem;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tip-list.warn li::before{content:'⚠';color:var(--amber)}
+
+/* ── Bloco de destaque ── */
+.callout{border-radius:10px;padding:12px 16px;margin:10px 0;font-size:.82rem;line-height:1.6}
+.callout.amber{background:#fef3c7;color:#78350f;border-left:3px solid #f59e0b}
+.callout.red  {background:#fee2e2;color:#7f1d1d;border-left:3px solid #ef4444}
+.callout.green{background:var(--green-l);color:#14532d;border-left:3px solid var(--green)}
+.callout.blue {background:var(--blue-l);color:#1e3a5f;border-left:3px solid var(--blue)}
+
+/* ── Tabela de estatísticas ── */
+.stat-table{width:100%;border-collapse:collapse;font-size:.8rem;margin:8px 0}
+.stat-table th{text-align:left;padding:6px 10px;background:var(--bg2);color:var(--text2);font-weight:700;font-size:.72rem;text-transform:uppercase;border-bottom:2px solid var(--border)}
+.stat-table td{padding:7px 10px;border-bottom:1px solid var(--bg2);color:var(--text2)}
+.stat-table td:first-child{font-weight:700;color:var(--text)}
+.stat-table tr:last-child td{border-bottom:none}
+.hi-amber{color:#b45309;font-weight:800}
+
+/* ── Rodapé do card ── */
+.mat-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;align-items:center;gap:12px}
+.prog-bar{height:5px;background:var(--bg2);border-radius:10px;overflow:hidden;flex:1}
+.prog-fill{height:100%;border-radius:10px;transition:width .5s;background:#f59e0b}
+.badge-prog{font-size:.7rem;font-weight:700;color:var(--text2);white-space:nowrap}
+.read-btn{font-size:.79rem;font-weight:700;padding:8px 18px;border-radius:20px;border:none;cursor:pointer;transition:all .2s;white-space:nowrap}
 .read-btn.unread{background:var(--ink);color:#fff}
-.read-btn.done{background:var(--green-l);color:var(--green)}
-.section-header{margin:24px 0 12px;font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.8px}
-.gym-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px}
-.gym-card{background:var(--bg2);border-radius:9px;padding:10px 12px}
-.gym-card .gym-n{font-weight:700;font-size:.82rem;margin-bottom:3px}
-.gym-card .gym-d{font-size:.76rem;color:var(--text2);line-height:1.45}
-@media(max-width:600px){.gym-grid{grid-template-columns:1fr}}
-.badge-prog{display:inline-flex;align-items:center;gap:4px;font-size:.7rem;font-weight:700;color:var(--text2)}
+.read-btn.done  {background:var(--green-l);color:var(--green)}
+
+/* ══════════════════════════════════════════════
+   MODAL DO QUIZ
+══════════════════════════════════════════════ */
+.quiz-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:flex-start;justify-content:center;overflow-y:auto;padding:20px;box-sizing:border-box}
+.quiz-overlay.hidden{display:none}
+.quiz-box{background:var(--card);border-radius:18px;width:100%;max-width:700px;box-shadow:0 20px 60px rgba(0,0,0,.35);margin:auto}
+.quiz-head{padding:22px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px}
+.quiz-head h3{font-size:1.05rem;font-weight:800;margin:0}
+.quiz-head p{font-size:.78rem;color:var(--text2);margin:2px 0 0}
+.quiz-progress{font-size:.72rem;font-weight:700;color:var(--text2);background:var(--bg2);padding:4px 10px;border-radius:20px;white-space:nowrap}
+.quiz-body{padding:20px 24px}
+.q-item{margin-bottom:22px;padding-bottom:22px;border-bottom:1px solid var(--bg2)}
+.q-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-num{font-size:.68rem;font-weight:700;color:var(--text2);text-transform:uppercase;margin-bottom:5px}
+.q-text{font-size:.9rem;font-weight:700;color:var(--text);line-height:1.5;margin-bottom:10px}
+.q-opts{display:flex;flex-direction:column;gap:7px}
+.q-opt{display:flex;align-items:flex-start;gap:10px;padding:10px 13px;border:1.5px solid var(--border);border-radius:9px;cursor:pointer;font-size:.83rem;color:var(--text2);transition:all .15s;user-select:none}
+.q-opt:hover{border-color:var(--ink);color:var(--text);background:var(--bg2)}
+.q-opt.selected{border-color:#f59e0b;background:#fef3c7;color:#78350f;font-weight:700}
+.q-opt.correct{border-color:var(--green);background:var(--green-l);color:#14532d;font-weight:700}
+.q-opt.wrong{border-color:#ef4444;background:#fee2e2;color:#7f1d1d}
+.q-opt .opt-letter{font-weight:800;font-size:.78rem;width:20px;flex-shrink:0;margin-top:1px}
+.quiz-foot{padding:16px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.btn-gab{background:var(--ink);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .18s}
+.btn-gab:hover{opacity:.9}
+.btn-gab:disabled{background:var(--bg2);color:var(--text2);cursor:not-allowed}
+.btn-concluir{background:var(--green);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.85rem;font-weight:700;cursor:pointer;display:none}
+.quiz-result{padding:16px 24px;background:var(--bg2);border-radius:12px;margin:4px 0 16px;display:none}
+.quiz-result .res-score{font-size:2rem;font-weight:800;text-align:center;margin-bottom:4px}
+.quiz-result .res-label{font-size:.82rem;color:var(--text2);text-align:center}
+.gab-section{margin-top:18px;padding-top:18px;border-top:2px dashed var(--border)}
+.gab-title{font-size:.78rem;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.6px;margin-bottom:12px}
+.gab-item{display:flex;align-items:center;gap:10px;font-size:.82rem;margin-bottom:7px}
+.gab-n{font-weight:800;width:24px;flex-shrink:0;color:var(--text2)}
+.gab-correct{background:var(--green-l);color:#14532d;border-radius:6px;padding:3px 9px;font-weight:700;font-size:.8rem}
+.quiz-warn{font-size:.78rem;color:var(--amber);font-weight:600;display:none}
 </style>
 {% endblock %}
 {% block content %}
 
-<div class="section-header">Materiais disponíveis</div>
-<div class="estudos-grid">
+<div class="cipa-wrap">
 
-  <!-- ── CARD 1: Maio Amarelo ── -->
-  <div class="mat-card" id="card-maio">
+  <!-- Identificação da campanha ativa -->
+  <div class="camp-badge">🟡 Campanha ativa: Maio Amarelo — Segurança no Trânsito</div>
+
+  <!-- ══ CARD MAIO AMARELO ══ -->
+  <div class="mat-card">
+
     <div class="mat-header">
       <div class="mat-ico">🚦</div>
       <div class="mat-meta">
         <div class="mat-title">Maio Amarelo</div>
-        <div class="mat-sub">Campanha de conscientização sobre segurança no trânsito</div>
-        <span class="mat-tag tag-amber">Segurança Viária</span>
+        <div class="mat-sub">Campanha nacional de conscientização sobre segurança no trânsito — leitura obrigatória para todos os colaboradores</div>
+        <span class="mat-tag">Segurança Viária · CIPA · Maio/2025</span>
       </div>
     </div>
+
+    <!-- Stats rápidos -->
+    <div class="stat-row">
+      <div class="stat-pill"><strong>1,35 M</strong><span>mortes/ano no mundo</span></div>
+      <div class="stat-pill"><strong>33 mil</strong><span>mortes/ano no Brasil</span></div>
+      <div class="stat-pill"><strong>+90%</strong><span>por falha humana</span></div>
+      <div class="stat-pill"><strong>4×</strong><span>mais risco com celular</span></div>
+    </div>
+
+    <!-- ── ACORDEÃO ── -->
     <div class="mat-body">
 
-      <div class="stat-row">
-        <div class="stat-pill"><strong>1,35M</strong><span>mortes/ano</span></div>
-        <div class="stat-pill"><strong>+90%</strong><span>falha humana</span></div>
-        <div class="stat-pill"><strong>Mai.</strong><span>conscientização</span></div>
-      </div>
-
+      <!-- 1. O que é -->
       <div class="acc-item">
         <button class="acc-btn" onclick="toggle(this)">
-          O que é o Maio Amarelo?
+          <span>🟡 O que é o Maio Amarelo?</span>
           <span class="acc-arrow">▼</span>
         </button>
         <div class="acc-panel">
-          O movimento <strong>Maio Amarelo</strong> é uma campanha de conscientização sobre segurança no trânsito que tem como objetivo chamar atenção da sociedade para o alto índice de mortes e feridos no trânsito em todo o mundo.<br><br>
-          Cerca de <strong>1,35 milhão de pessoas</strong> morrem a cada ano em decorrência de acidentes de trânsito. Mais de <strong>90%</strong> dos acidentes ocorrem por falha humana — imperícia, imprudência ou desatenção.
+          O <strong>Maio Amarelo</strong> é um movimento de conscientização sobre segurança no trânsito criado no Brasil em <strong>2014</strong>, por iniciativa da <strong>Associação Brasileira de Medicina de Tráfego (ABRAMET)</strong> em parceria com a <strong>Organização das Nações Unidas (ONU)</strong>. O movimento ocorre todo mês de maio e mobiliza poder público, iniciativa privada, sociedade civil e mídia em torno de um único objetivo: <strong>reduzir mortes e feridos no trânsito</strong>.
+          <br><br>
+          O nome faz referência à <strong>cor amarela do semáforo</strong>, que representa o estado de <strong>atenção</strong> — justamente o que todos os usuários das vias precisam ter no dia a dia.
+          <div class="callout amber" style="margin-top:12px">
+            💡 <strong>Slogan:</strong> "Por você. Por todos. Viva o trânsito seguro."
+          </div>
         </div>
       </div>
 
+      <!-- 2. Histórico -->
       <div class="acc-item">
         <button class="acc-btn" onclick="toggle(this)">
-          Como melhorar a segurança no trânsito?
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          Por meio da <strong>Direção Defensiva</strong> — conjunto de medidas que devem ser adotadas pelos motoristas com o objetivo de melhorar a segurança no trânsito — é possível diminuir o número de acidentes ou minimizar as suas consequências.<br><br>
-          Além de praticar a direção defensiva, o motorista deve tomar cuidados para promover a segurança de si mesmo, dos demais condutores, passageiros e dos usuários mais vulneráveis das vias, como pedestres, motociclistas e ciclistas.
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Como fazer a sua parte?
+          <span>📅 Histórico da Campanha</span>
           <span class="acc-arrow">▼</span>
         </button>
         <div class="acc-panel">
           <ul class="tip-list">
-            <li>Respeite os limites de velocidade</li>
-            <li>Sempre use o cinto de segurança</li>
-            <li>Se beber, não dirija</li>
-            <li>Respeite a sinalização de trânsito</li>
-            <li>Não dirija ou atravesse vias usando o celular</li>
-            <li>Atenção com pedestres, ciclistas e motociclistas</li>
-            <li>Mantenha a distância de segurança dos veículos</li>
-            <li>Use sempre a faixa de pedestres para atravessar</li>
+            <li><strong>2014 — 1ª edição:</strong> lançada em São Paulo com apoio do DETRAN-SP e da CET-SP. Inspirada no Dia Mundial em Memória das Vítimas de Trânsito, promovido pela ONU todo terceiro domingo de novembro.</li>
+            <li><strong>2015 a 2019:</strong> expansão para todos os estados brasileiros. Órgãos como DENATRAN, PRF e CONTRAN passaram a integrar a campanha oficialmente.</li>
+            <li><strong>2020 e 2021:</strong> adaptação ao formato digital em razão da pandemia, com ações on-line, webinars e conteúdo em redes sociais.</li>
+            <li><strong>2022 em diante:</strong> o movimento já se espalhava por mais de <strong>50 países</strong> nos cinco continentes, tornando-se uma referência mundial em educação para o trânsito.</li>
           </ul>
-          <br>
-          <em>A segurança no trânsito é um dever de todos. Seja motorista, motociclista, pedestre ou ciclista — adote atitudes preventivas.</em>
+          <div class="callout blue" style="margin-top:10px">
+            🌎 O Maio Amarelo nasceu no Brasil e hoje é referência mundial em educação para o trânsito.
+          </div>
         </div>
       </div>
 
-    </div>
+      <!-- 3. Importância -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          <span>⚡ Importância da Conscientização</span>
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          Os acidentes de trânsito são uma das principais causas de <strong>morte evitável</strong> no mundo. No Brasil, o trânsito é a <strong>principal causa de morte entre jovens de 15 a 29 anos</strong> — uma faixa etária produtiva e economicamente ativa.
+          <br><br>
+          A <strong>Organização Mundial da Saúde (OMS)</strong> estima que <strong>1,35 milhão de pessoas morrem por ano</strong> no mundo em acidentes de trânsito. Para cada morte, estima-se que <strong>20 a 50 pessoas</strong> sofram ferimentos graves, gerando custos humanos, sociais e econômicos enormes.
+          <br><br>
+          O custo econômico dos acidentes de trânsito para o Brasil é estimado em <strong>R$ 56 bilhões por ano</strong> (IPEA), considerando atendimento médico, perdas de produtividade, danos materiais e custos previdenciários.
+          <br><br>
+          Mais de <strong>90% dos acidentes</strong> têm como causa a <strong>falha humana</strong> — imperícia (falta de habilidade), imprudência (agir sem cautela) ou negligência (omitir cuidados necessários). Isso significa que a maioria dos acidentes é <strong>evitável</strong>.
+
+          <div class="callout red" style="margin-top:12px">
+            🚨 <strong>No Brasil:</strong> aproximadamente 33.000 brasileiros morrem por ano em decorrência de acidentes de trânsito. São mais de 90 mortes por dia.
+          </div>
+
+          <div class="callout green" style="margin-top:8px">
+            ✅ <strong>A boa notícia:</strong> por serem causados principalmente por falha humana, a maioria dos acidentes pode ser evitada com <strong>mudança de comportamento</strong> e <strong>adoção de atitudes seguras</strong>.
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Estatísticas -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          <span>📊 Estatísticas Gerais de Acidentes</span>
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <table class="stat-table">
+            <thead>
+              <tr><th>Indicador</th><th>Dado</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Mortes/ano no mundo (OMS)</td><td><span class="hi-amber">1,35 milhão</span></td></tr>
+              <tr><td>Mortes/ano no Brasil</td><td><span class="hi-amber">~33.000 pessoas</span></td></tr>
+              <tr><td>Causa principal</td><td>Falha humana (<strong>+90%</strong> dos casos)</td></tr>
+              <tr><td>Velocidade inadequada</td><td>Responsável por <strong>~40%</strong> dos acidentes fatais</td></tr>
+              <tr><td>Álcool ao volante</td><td>Presente em <strong>40–50%</strong> dos acidentes graves</td></tr>
+              <tr><td>Celular ao volante</td><td>Aumenta o risco de acidentes em <strong>4 vezes</strong></td></tr>
+              <tr><td>Cinto de segurança</td><td>Reduz a mortalidade em <strong>45%</strong></td></tr>
+              <tr><td>Capacete (motociclistas)</td><td>Reduz a mortalidade em <strong>73%</strong></td></tr>
+              <tr><td>Feridos graves p/ morte</td><td>Estimativa de <strong>20 a 50</strong> feridos graves para cada óbito</td></tr>
+              <tr><td>Custo econômico no Brasil</td><td><strong>R$ 56 bilhões/ano</strong> (IPEA)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 5. Direção defensiva - o que é -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          <span>🛡️ O que é Direção Defensiva?</span>
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <strong>Direção Defensiva</strong> é o conjunto de técnicas e atitudes preventivas que o condutor adota para <strong>evitar acidentes, prevendo situações de risco antes que elas aconteçam</strong>.
+          <br><br>
+          O princípio fundamental é: <em>não importa a situação, sempre existe uma atitude segura a ser adotada</em>. O motorista defensivo não confia apenas na própria habilidade — ele <strong>antecipa os erros dos outros condutores</strong>, adapta sua condução às condições do ambiente e mantém o controle emocional ao volante.
+          <br><br>
+          A prática deve ser adotada por <strong>todos os condutores</strong> — motoristas de carros, motos, caminhões e ônibus — em qualquer condição de via, trânsito ou clima.
+
+          <div class="callout amber" style="margin-top:12px">
+            🎯 <strong>Direção defensiva não é apenas sobre você</strong> — é sobre proteger a si mesmo, os passageiros, os pedestres e todos os usuários da via.
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Dicas práticas -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          <span>✅ Dicas Práticas para o Dia a Dia</span>
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <ul class="tip-list num">
+            <li>
+              <div><strong>Respeite os limites de velocidade:</strong> adapte a velocidade às condições da via, do tráfego e do clima. Velocidade inadequada é responsável por cerca de <strong>40% dos acidentes fatais</strong>.</div>
+            </li>
+            <li>
+              <div><strong>Mantenha a distância de segurança — regra dos 3 segundos:</strong> escolha um ponto fixo à frente e conte 3 segundos após o veículo da frente passar por ele. Só avance quando já tiver passado. Em chuva ou à noite, aumente para 5 segundos.</div>
+            </li>
+            <li>
+              <div><strong>Nunca use o celular ao volante:</strong> o celular aumenta o risco de acidente em <strong>4 vezes</strong>, mesmo no viva-voz — o foco visual e cognitivo fica comprometido. Pare o veículo em local seguro se precisar atender.</div>
+            </li>
+            <li>
+              <div><strong>Use o cinto de segurança — para todos:</strong> obrigatório em todos os bancos. O cinto reduz a mortalidade em <strong>45%</strong>. Crianças até 7 anos e meio devem usar cadeirinha ou assento elevado.</div>
+            </li>
+            <li>
+              <div><strong>Se beber, não dirija — tolerância zero:</strong> a legislação brasileira (Lei Seca) adota tolerância zero. Qualquer concentração de álcool no sangue já compromete reflexos, julgamento e tempo de reação.</div>
+            </li>
+            <li>
+              <div><strong>Respeite a sinalização de trânsito:</strong> semáforos, placas de velocidade, faixas de pedestres e sinais de parada obrigatória existem para proteger a todos. Nunca avance sinal vermelho ou faça conversões proibidas.</div>
+            </li>
+            <li>
+              <div><strong>Atenção redobrada com usuários vulneráveis:</strong> motociclistas, ciclistas e pedestres têm risco muito maior em colisões. Dê preferência e mantenha distância segura ao ultrapassar.</div>
+            </li>
+            <li>
+              <div><strong>Mantenha o veículo em bom estado:</strong> verifique regularmente freios, pneus (calibragem e desgaste), iluminação, limpadores de para-brisa e fluído de direção.</div>
+            </li>
+            <li>
+              <div><strong>Evite dirigir com sono:</strong> em viagens longas, pare a cada 2 horas para descansar. Sonolência ao volante é tão perigosa quanto embriaguez — ambas comprometem os reflexos e o julgamento.</div>
+            </li>
+            <li>
+              <div><strong>Planeje sua viagem:</strong> conheça o trajeto, verifique as condições climáticas e saia com tempo suficiente. Pressa é uma das principais causas de imprudência no trânsito.</div>
+            </li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 7. Usuários vulneráveis -->
+      <div class="acc-item">
+        <button class="acc-btn" onclick="toggle(this)">
+          <span>🚶 Pedestres, Ciclistas e Motociclistas</span>
+          <span class="acc-arrow">▼</span>
+        </button>
+        <div class="acc-panel">
+          <h4>👟 Pedestres</h4>
+          <ul class="tip-list">
+            <li>Use <strong>sempre a faixa de pedestres</strong> para atravessar a via.</li>
+            <li>Faça <strong>contato visual com o motorista</strong> antes de atravessar, certificando-se de que foi visto e que o veículo irá parar.</li>
+            <li>Evite usar <strong>fone de ouvido ou celular</strong> ao atravessar a rua — eles comprometem a atenção e a percepção de risco.</li>
+            <li>Prefira <strong>travessias iluminadas</strong> à noite e use roupas claras ou refletivas quando possível.</li>
+          </ul>
+
+          <h4 style="margin-top:12px">🚲 Ciclistas</h4>
+          <ul class="tip-list">
+            <li>Use <strong>capacete, sinalizadores dianteiro e traseiro</strong> e espelho retrovisor.</li>
+            <li>Respeite a <strong>ciclofaixa e ciclovia</strong> onde houver. Quando não houver, circule o mais próximo possível da calçada.</li>
+            <li>Sinalize com antecedência toda <strong>conversão e parada</strong>.</li>
+          </ul>
+
+          <h4 style="margin-top:12px">🏍️ Motociclistas</h4>
+          <ul class="tip-list">
+            <li>Use sempre o conjunto completo de EPIs: <strong>capacete (com viseira), luvas, jaqueta, calça e bota</strong>.</li>
+            <li>O capacete reduz a mortalidade em <strong>73%</strong> — nunca abra mão dele.</li>
+            <li>Evite circular entre veículos em alta velocidade (<em>lane splitting</em>) — é uma das principais causas de acidentes com motociclistas.</li>
+            <li>Mantenha o veículo sempre visível: use sempre o farol aceso, mesmo de dia.</li>
+          </ul>
+
+          <div class="callout amber" style="margin-top:12px">
+            ⚠️ Motociclistas representam mais de <strong>25% das vítimas fatais</strong> no trânsito brasileiro, apesar de serem uma parcela menor dos veículos em circulação.
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /mat-body -->
+
+    <!-- Rodapé -->
     <div class="mat-footer">
       <div class="badge-prog" id="prog-maio">0% lido</div>
-      <div class="prog-bar"><div class="prog-fill" id="fill-maio" style="width:0%;background:var(--amber)"></div></div>
-      <button class="read-btn unread" id="btn-maio" onclick="marcar('maio')">Marcar lido</button>
+      <div class="prog-bar"><div class="prog-fill" id="fill-maio" style="width:0%"></div></div>
+      <button class="read-btn unread" id="btn-maio" onclick="abrirQuiz()">📝 Fazer Avaliação</button>
+    </div>
+
+  </div><!-- /mat-card -->
+
+  <!-- Progresso -->
+  <div class="card" style="max-width:500px;margin-top:16px" id="progresso-card">
+    <div class="card-title">Seu progresso</div>
+    <div class="card-sub">Campanha Maio Amarelo</div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="font-size:2.2rem;font-weight:800;color:var(--ink)" id="countLido">0</div>
+      <div style="flex:1">
+        <div style="font-size:.78rem;color:var(--text2);margin-bottom:5px">de 1 material concluído</div>
+        <div class="prog-bar" style="height:8px"><div class="prog-fill" id="fill-geral" style="width:0%;background:var(--ink)"></div></div>
+      </div>
+      <div id="trofeu" style="font-size:2rem;display:none">🏆</div>
     </div>
   </div>
 
-  <!-- ── CARD 2: Ergonomia no Escritório ── -->
-  <div class="mat-card" id="card-ergo">
-    <div class="mat-header">
-      <div class="mat-ico">🪑</div>
-      <div class="mat-meta">
-        <div class="mat-title">Ergonomia no Escritório</div>
-        <div class="mat-sub">Postura correta e dicas para trabalhar com saúde</div>
-        <span class="mat-tag tag-green">Ergonomia</span>
+</div><!-- /cipa-wrap -->
+
+
+<!-- ════════════════════════════════════════════════
+     MODAL DE AVALIAÇÃO
+════════════════════════════════════════════════ -->
+<div class="quiz-overlay hidden" id="quizOverlay">
+  <div class="quiz-box">
+
+    <div class="quiz-head">
+      <div>
+        <h3>📝 Avaliação — Maio Amarelo</h3>
+        <p>Responda as 12 questões abaixo e clique em "Ver Gabarito"</p>
+      </div>
+      <span class="quiz-progress" id="qProgress">0/12 respondidas</span>
+    </div>
+
+    <div class="quiz-body" id="quizBody">
+      <!-- Questões geradas pelo JS -->
+    </div>
+
+    <div class="quiz-result" id="quizResult">
+      <div class="res-score" id="resScore">—</div>
+      <div class="res-label" id="resLabel">—</div>
+    </div>
+
+    <div class="quiz-foot">
+      <span class="quiz-warn" id="quizWarn">⚠️ Responda todas as questões antes de ver o gabarito.</span>
+      <div style="display:flex;gap:10px;margin-left:auto">
+        <button class="btn-gab" id="btnGab" onclick="verGabarito()">Ver Gabarito</button>
+        <button class="btn-concluir" id="btnConcluir" onclick="concluirQuiz()">✓ Concluir e Marcar como Lido</button>
       </div>
     </div>
-    <div class="mat-body">
 
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Dicas gerais de boa postura
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <ul class="tip-list">
-            <li>Monitor ao nível dos olhos, distante 45–70 cm</li>
-            <li>Cabeça e pescoço em posição reta, ombros relaxados</li>
-            <li>Região lombar apoiada no encosto da cadeira</li>
-            <li>Antebraço, punhos e mãos em linha reta (posição neutra)</li>
-            <li>Cotovelo junto ao corpo</li>
-            <li>Espaço entre a dobra do joelho e a borda da cadeira</li>
-            <li>Ângulo igual ou superior a 90° para joelhos e quadril</li>
-            <li>Pés apoiados no chão ou em descanso para os pés</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Fatores operacionais (mesa e periféricos)
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <ul class="tip-list">
-            <li>Manter o documento próximo ao monitor e no mesmo plano visual (digitação)</li>
-            <li>Mouse e outros acessórios próximos ao teclado, no mesmo plano</li>
-            <li>Utilizar apoio para os punhos para manter a postura neutra</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          O que NÃO fazer — erros comuns
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <ul class="tip-list warn">
-            <li>Torcer o pescoço para ver a tela</li>
-            <li>Monitor muito baixo (cabeça caída para frente)</li>
-            <li>Monitor muito alto (cabeça inclinada para trás)</li>
-            <li>Mouse afastado do teclado (braço estendido lateralmente)</li>
-            <li>Punho dobrado para cima ou para baixo no mouse/teclado</li>
-            <li>Dedos apontados para dentro ou mãos cruzadas no teclado</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Consequências da má postura
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <ul class="tip-list warn">
-            <li>Dor no pescoço</li>
-            <li>Dor nas costas</li>
-            <li>Dor nos braços ou antebraço</li>
-            <li>Dor nas mãos</li>
-            <li>Sensação de cansaço e desconforto</li>
-            <li>LER / DORT</li>
-          </ul>
-          <br>
-          A melhor coisa é <strong>prevenir</strong> estes problemas. Mantenha-se sempre na <strong>postura NEUTRA</strong> — isso pode significar um dia mais produtivo e confortável para você.
-        </div>
-      </div>
-
-    </div>
-    <div class="mat-footer">
-      <div class="badge-prog" id="prog-ergo">0% lido</div>
-      <div class="prog-bar"><div class="prog-fill" id="fill-ergo" style="width:0%;background:var(--green)"></div></div>
-      <button class="read-btn unread" id="btn-ergo" onclick="marcar('ergo')">Marcar lido</button>
-    </div>
-  </div>
-
-  <!-- ── CARD 3: Treinamento Ergonomia SEGSEMPRE ── -->
-  <div class="mat-card" id="card-seg">
-    <div class="mat-header">
-      <div class="mat-ico">🏋️</div>
-      <div class="mat-meta">
-        <div class="mat-title">Orientação Ergonômica — Foco ADM</div>
-        <div class="mat-sub">Treinamento completo: ergonomia, LER/DORT e ginástica laboral</div>
-        <span class="mat-tag tag-blue">Treinamento</span>
-      </div>
-    </div>
-    <div class="mat-body">
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          O que é Ergonomia?
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          Ergonomia é um conjunto de ciências e tecnologias que procura a <strong>adaptação confortável e produtiva</strong> entre o ser humano e seu trabalho, basicamente procurando adaptar as condições de trabalho às características do ser humano.<br><br>
-          A ergonomia está (ou deveria estar) presente em todas as áreas da vida — em casa, no escritório, nos móveis, na cozinha, em espaços de trabalho e muito mais.
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Postura correta no computador
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <ul class="tip-list">
-            <li>Ambiente neutro, superfícies não refletoras e pouco ruído</li>
-            <li>Regular brilho e contraste do monitor</li>
-            <li>Teclado diretamente à sua frente</li>
-            <li>Mouse próximo ao teclado e no mesmo nível</li>
-            <li>Joelhos discretamente abaixo do quadril</li>
-            <li>Pés apoiados no solo ou em descanso para os pés</li>
-            <li>Iluminação adequada, com luz indireta de preferência</li>
-            <li>Ombros e quadris alinhados</li>
-            <li>Encosto adaptado à curvatura da coluna</li>
-            <li>Descanso de braço na altura do cotovelo</li>
-            <li>Altura do assento abaixo da patela</li>
-            <li>Documento próximo ao monitor (no mesmo plano visual)</li>
-          </ul>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          O que são LER e DORT?
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          <strong>LER — Lesão por Esforço Repetitivo</strong><br>
-          Conjunto de síndromes que atacam os nervos, músculos e tendões (juntos ou separadamente).<br><br>
-          <strong>DORT — Distúrbio Osteomuscular Relacionado ao Trabalho</strong><br>
-          É exatamente igual à LER, porém identifica exatamente a origem do problema: <strong>O TRABALHO</strong>.<br><br>
-          <em>Origem na atividade ocupacional = DORT &nbsp;|&nbsp; Outra origem = LER</em>
-        </div>
-      </div>
-
-      <div class="acc-item">
-        <button class="acc-btn" onclick="toggle(this)">
-          Ginástica Laboral — Exercícios
-          <span class="acc-arrow">▼</span>
-        </button>
-        <div class="acc-panel">
-          A ginástica laboral é a prática voluntária de atividade física no ambiente de trabalho, visando melhorar a condição física do trabalhador, evitar lesões e auxiliar na jornada de trabalho.<br><br>
-          <div class="gym-grid">
-            <div class="gym-card">
-              <div class="gym-n">Alongamento de braços</div>
-              <div class="gym-d">Braços acima da cabeça com dedos cruzados. Segure 5 segundos, estendendo cada braço até sentir leve tensão.</div>
-            </div>
-            <div class="gym-card">
-              <div class="gym-n">Flexão lateral do tronco</div>
-              <div class="gym-d">Braços dobrados, mão no cotovelo contrário. Incline o tronco lateralmente, 5 segundos de cada lado.</div>
-            </div>
-            <div class="gym-card">
-              <div class="gym-n">Elevação de ombros</div>
-              <div class="gym-d">Eleve os ombros contraindo os músculos das costas. Segure 5 segundos até sentir suave tensão.</div>
-            </div>
-            <div class="gym-card">
-              <div class="gym-n">Pescoço e ombro</div>
-              <div class="gym-d">Mãos entrelaçadas atrás das costas. Estique o pescoço para o lado contrário. 5 segundos por lado.</div>
-            </div>
-            <div class="gym-card">
-              <div class="gym-n">Palmas — flexão de punho</div>
-              <div class="gym-d">Palmas juntas com dedos para cima. Empurre uma contra a outra, 8 segundos até sentir tensão no antebraço.</div>
-            </div>
-            <div class="gym-card">
-              <div class="gym-n">Rotação de punhos</div>
-              <div class="gym-d">Palmas juntas, gire as mãos para baixo estirando os pulsos. 8 segundos, cada antebraço.</div>
-            </div>
-          </div>
-          <br>
-          <strong>Pratique-os:</strong>
-          <ul class="tip-list" style="margin-top:6px">
-            <li>No início da jornada</li>
-            <li>No término da jornada</li>
-            <li>No horário de intervalo</li>
-            <li>Em cada momento que sentir incômodo ou dor</li>
-          </ul>
-        </div>
-      </div>
-
-    </div>
-    <div class="mat-footer">
-      <div class="badge-prog" id="prog-seg">0% lido</div>
-      <div class="prog-bar"><div class="prog-fill" id="fill-seg" style="width:0%;background:var(--blue)"></div></div>
-      <button class="read-btn unread" id="btn-seg" onclick="marcar('seg')">Marcar lido</button>
-    </div>
-  </div>
-
-</div><!-- /estudos-grid -->
-
-<!-- Progresso geral -->
-<div class="card" style="max-width:500px">
-  <div class="card-title">Seu progresso nos estudos</div>
-  <div class="card-sub">Materiais concluídos</div>
-  <div style="display:flex;align-items:center;gap:12px">
-    <div style="font-size:2rem;font-weight:800" id="countLido">0</div>
-    <div style="flex:1">
-      <div style="font-size:.78rem;color:var(--text2);margin-bottom:4px">de 3 materiais lidos</div>
-      <div class="prog-bar" style="margin:0;height:8px"><div class="prog-fill" id="fill-geral" style="width:0%;background:var(--ink)"></div></div>
-    </div>
-    <div id="trofeu" style="font-size:1.8rem;display:none">🏆</div>
   </div>
 </div>
 
 {% endblock %}
 {% block scripts %}
 <script>
+/* ── Acordeão ── */
 function toggle(btn){
-  var panel=btn.nextElementSibling,arrow=btn.querySelector('.acc-arrow');
-  var open=panel.classList.toggle('open');
-  arrow.classList.toggle('open',open);
+  var p=btn.nextElementSibling,a=btn.querySelector('.acc-arrow');
+  var o=p.classList.toggle('open');
+  a.classList.toggle('open',o);
 }
 
-var KEYS=['maio','ergo','seg'];
-var COLORS={maio:'var(--amber)',ergo:'var(--green)',seg:'var(--blue)'};
-
+/* ── Estado lido ── */
 function loadState(){
-  KEYS.forEach(function(k){
-    var done=localStorage.getItem('estudo_'+k)==='1';
-    applyState(k,done);
-  });
-  updateGeral();
+  var done=localStorage.getItem('estudo_maio')==='1';
+  applyDone(done);
+  document.getElementById('countLido').textContent=done?1:0;
+  document.getElementById('fill-geral').style.width=done?'100%':'0%';
+  document.getElementById('trofeu').style.display=done?'block':'none';
 }
-
-function applyState(k,done){
-  var btn=document.getElementById('btn-'+k);
-  var fill=document.getElementById('fill-'+k);
-  var prog=document.getElementById('prog-'+k);
+function applyDone(done){
+  var btn=document.getElementById('btn-maio');
+  var fill=document.getElementById('fill-maio');
+  var prog=document.getElementById('prog-maio');
   if(done){
     btn.textContent='✓ Concluído';
     btn.className='read-btn done';
+    btn.onclick=null;
     fill.style.width='100%';
     prog.textContent='100% lido';
-  } else {
-    btn.textContent='Marcar lido';
-    btn.className='read-btn unread';
-    fill.style.width='0%';
-    prog.textContent='0% lido';
   }
 }
 
-function marcar(k){
-  var done=localStorage.getItem('estudo_'+k)==='1';
-  var novo=done?'0':'1';
-  localStorage.setItem('estudo_'+k,novo);
-  applyState(k,novo==='1');
-  updateGeral();
-  showToast(novo==='1'?'✓ Material marcado como lido!':'Material desmarcado.');
+/* ══════════════════════════════════════════════
+   BANCO DE QUESTÕES
+══════════════════════════════════════════════ */
+var QUESTOES=[
+  {
+    texto:'O que é o Maio Amarelo?',
+    opts:[
+      'Uma campanha de vacinação promovida pelo Ministério da Saúde em maio',
+      'Um movimento de conscientização sobre segurança no trânsito',
+      'Uma campanha de prevenção de doenças ocupacionais no trabalho',
+      'Um programa nacional de educação no trânsito voltado exclusivamente a caminhoneiros'
+    ],
+    correta:1
+  },
+  {
+    texto:'Em que ano o Maio Amarelo foi criado no Brasil e por qual entidade?',
+    opts:[
+      'Em 2010, pelo DENATRAN e pela Polícia Rodoviária Federal (PRF)',
+      'Em 2012, pelo Ministério da Saúde e pelo DETRAN-SP',
+      'Em 2014, pela ABRAMET em parceria com a ONU',
+      'Em 2016, pela Secretaria Nacional de Trânsito e pelo IBGE'
+    ],
+    correta:2
+  },
+  {
+    texto:'Por que a cor amarela foi escolhida para representar a campanha?',
+    opts:[
+      'Por ser a cor oficial da ONU para campanhas de saúde pública',
+      'Por ser a cor do brasão nacional brasileiro',
+      'Por representar o estado de atenção dos semáforos',
+      'Por homenagear as vítimas fatais dos acidentes de trânsito'
+    ],
+    correta:2
+  },
+  {
+    texto:'Quantas pessoas morrem por ano no mundo em acidentes de trânsito, segundo a OMS?',
+    opts:[
+      '500 mil pessoas',
+      '800 mil pessoas',
+      '1,35 milhão de pessoas',
+      '2 milhões de pessoas'
+    ],
+    correta:2
+  },
+  {
+    texto:'Qual é a principal causa dos acidentes de trânsito?',
+    opts:[
+      'Vias em mau estado de conservação',
+      'Defeitos mecânicos nos veículos',
+      'Condições climáticas adversas',
+      'Falha humana — imperícia, imprudência ou negligência'
+    ],
+    correta:3
+  },
+  {
+    texto:'Qual é o impacto do uso do celular ao volante sobre o risco de acidentes?',
+    opts:[
+      'Dobra (2×) o risco de acidentes',
+      'Triplica (3×) o risco de acidentes',
+      'Aumenta o risco de acidentes em 4 vezes',
+      'Não representa risco se utilizado no modo viva-voz'
+    ],
+    correta:2
+  },
+  {
+    texto:'O que é Direção Defensiva?',
+    opts:[
+      'A prática de dirigir sempre abaixo do limite de velocidade estabelecido',
+      'Conjunto de técnicas e atitudes preventivas para evitar acidentes, prevendo situações de risco antes que ocorram',
+      'Um curso obrigatório exigido pela legislação para renovação da CNH',
+      'Técnica de pilotagem ensinada exclusivamente a motoristas profissionais'
+    ],
+    correta:1
+  },
+  {
+    texto:'Quanto o cinto de segurança reduz a mortalidade em acidentes de trânsito?',
+    opts:[
+      '20%',
+      '30%',
+      '45%',
+      '65%'
+    ],
+    correta:2
+  },
+  {
+    texto:'Qual percentual dos acidentes fatais tem a velocidade inadequada como fator determinante?',
+    opts:[
+      'Cerca de 10%',
+      'Cerca de 20%',
+      'Cerca de 40%',
+      'Cerca de 60%'
+    ],
+    correta:2
+  },
+  {
+    texto:'O trânsito é a principal causa de morte em qual faixa etária no Brasil?',
+    opts:[
+      'Crianças de 0 a 14 anos',
+      'Jovens de 15 a 29 anos',
+      'Adultos de 30 a 45 anos',
+      'Idosos acima de 60 anos'
+    ],
+    correta:1
+  },
+  {
+    texto:'Qual é a regra prática recomendada para manter a distância de segurança entre veículos em condições normais?',
+    opts:[
+      'Regra dos 10 metros fixos entre veículos',
+      'Regra da metade da velocidade em metros',
+      'Regra dos 3 segundos',
+      'Regra dos 5 segundos em qualquer situação'
+    ],
+    correta:2
+  },
+  {
+    texto:'Para cada morte no trânsito, quantas pessoas ficam gravemente feridas, segundo as estimativas?',
+    opts:[
+      '5 a 10 pessoas',
+      '10 a 15 pessoas',
+      '20 a 50 pessoas',
+      'Mais de 100 pessoas'
+    ],
+    correta:2
+  }
+];
+
+var LETRAS=['A','B','C','D'];
+var respostas={}; // índice da questão → opção selecionada
+var gabarito_visivel=false;
+
+/* ── Renderizar quiz ── */
+function renderQuiz(){
+  var html='';
+  QUESTOES.forEach(function(q,i){
+    html+='<div class="q-item" id="qi-'+i+'">';
+    html+='<div class="q-num">Questão '+(i+1)+' de '+QUESTOES.length+'</div>';
+    html+='<div class="q-text">'+q.texto+'</div>';
+    html+='<div class="q-opts">';
+    q.opts.forEach(function(o,j){
+      html+='<div class="q-opt" id="opt-'+i+'-'+j+'" onclick="selecionar('+i+','+j+')">';
+      html+='<span class="opt-letter">'+LETRAS[j]+')</span>';
+      html+='<span>'+o+'</span>';
+      html+='</div>';
+    });
+    html+='</div></div>';
+  });
+  document.getElementById('quizBody').innerHTML=html;
 }
 
-function updateGeral(){
-  var count=KEYS.filter(function(k){return localStorage.getItem('estudo_'+k)==='1'}).length;
-  document.getElementById('countLido').textContent=count;
-  var pct=Math.round(count/KEYS.length*100);
-  document.getElementById('fill-geral').style.width=pct+'%';
-  document.getElementById('trofeu').style.display=count===KEYS.length?'block':'none';
+function selecionar(q,op){
+  if(gabarito_visivel) return;
+  // desmarcar opção anterior
+  QUESTOES[q].opts.forEach(function(_,j){
+    document.getElementById('opt-'+q+'-'+j).classList.remove('selected');
+  });
+  document.getElementById('opt-'+q+'-'+op).classList.add('selected');
+  respostas[q]=op;
+  atualizarProgresso();
 }
+
+function atualizarProgresso(){
+  var n=Object.keys(respostas).length;
+  document.getElementById('qProgress').textContent=n+'/'+QUESTOES.length+' respondidas';
+}
+
+function verGabarito(){
+  var respondidas=Object.keys(respostas).length;
+  var warn=document.getElementById('quizWarn');
+  if(respondidas<QUESTOES.length){
+    warn.style.display='block';
+    setTimeout(function(){warn.style.display='none';},3000);
+    return;
+  }
+  warn.style.display='none';
+  gabarito_visivel=true;
+
+  var acertos=0;
+  QUESTOES.forEach(function(q,i){
+    var escolhida=respostas[i];
+    for(var j=0;j<q.opts.length;j++){
+      var el=document.getElementById('opt-'+i+'-'+j);
+      el.style.cursor='default';
+      if(j===q.correta){
+        el.classList.add('correct');
+      } else if(j===escolhida && escolhida!==q.correta){
+        el.classList.add('wrong');
+      }
+    }
+    if(escolhida===q.correta) acertos++;
+  });
+
+  // Adicionar gabarito resumido
+  var gabHtml='<div class="gab-section"><div class="gab-title">📋 Gabarito</div>';
+  QUESTOES.forEach(function(q,i){
+    gabHtml+='<div class="gab-item">';
+    gabHtml+='<span class="gab-n">'+( i+1)+'.</span>';
+    gabHtml+='<span class="gab-correct">'+LETRAS[q.correta]+') '+q.opts[q.correta]+'</span>';
+    gabHtml+='</div>';
+  });
+  gabHtml+='</div>';
+  document.getElementById('quizBody').insertAdjacentHTML('beforeend',gabHtml);
+
+  // Pontuação
+  var pct=Math.round(acertos/QUESTOES.length*100);
+  var label=pct>=90?'Excelente! 🏆':pct>=70?'Bom desempenho! 👍':pct>=50?'Regular — revise o material 📖':'Revise o material com atenção ⚠️';
+  document.getElementById('resScore').textContent=acertos+'/'+QUESTOES.length+' ('+pct+'%)';
+  document.getElementById('resLabel').textContent=label;
+  document.getElementById('quizResult').style.display='block';
+
+  // Trocar botões
+  document.getElementById('btnGab').style.display='none';
+  document.getElementById('btnConcluir').style.display='block';
+
+  // Rolar para o início do quiz
+  document.getElementById('quizOverlay').scrollTop=0;
+}
+
+function concluirQuiz(){
+  localStorage.setItem('estudo_maio','1');
+  applyDone(true);
+  document.getElementById('countLido').textContent=1;
+  document.getElementById('fill-geral').style.width='100%';
+  document.getElementById('trofeu').style.display='block';
+  fecharQuiz();
+  showToast('✓ Avaliação concluída! Material marcado como lido.');
+}
+
+function abrirQuiz(){
+  respostas={};
+  gabarito_visivel=false;
+  renderQuiz();
+  document.getElementById('quizResult').style.display='none';
+  document.getElementById('btnGab').style.display='';
+  document.getElementById('btnConcluir').style.display='none';
+  document.getElementById('qProgress').textContent='0/'+QUESTOES.length+' respondidas';
+  document.getElementById('quizWarn').style.display='none';
+  document.getElementById('quizOverlay').classList.remove('hidden');
+  document.getElementById('quizOverlay').scrollTop=0;
+  document.body.style.overflow='hidden';
+}
+
+function fecharQuiz(){
+  document.getElementById('quizOverlay').classList.add('hidden');
+  document.body.style.overflow='';
+}
+
+// Fechar ao clicar fora do box
+document.getElementById('quizOverlay').addEventListener('click',function(e){
+  if(e.target===this && !gabarito_visivel) fecharQuiz();
+});
 
 loadState();
 </script>

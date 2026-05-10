@@ -11,7 +11,7 @@ except ImportError:
 from flask import (Flask, render_template, request, redirect,
                    url_for, session, jsonify, send_from_directory)
 from flask_sqlalchemy import SQLAlchemy
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 import os, json
@@ -29,6 +29,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
 
 ALLOWED_IMG = {'png','jpg','jpeg','gif','webp','bmp'}
 ALLOWED_VID = {'mp4','mov','avi','webm','mkv','ogg','m4v','3gp','flv'}
@@ -157,6 +158,7 @@ def login():
         senha = request.form.get('senha','')
         u = User.query.filter_by(email=email).first()
         if u and u.senha_hash and check_password_hash(u.senha_hash, senha):
+            session.permanent = True
             session['user_id'] = u.id
             return redirect(url_for('dashboard'))
         return render_template('login.html', erro='E-mail ou senha incorretos.', msg=msg)
@@ -179,6 +181,7 @@ def cadastro():
             import base64
             u.foto_perfil = 'data:' + fp.mimetype + ';base64,' + base64.b64encode(fp.read()).decode()
         db.session.add(u); db.session.commit()
+        session.permanent = True
         session['user_id'] = u.id
         return redirect(url_for('dashboard'))
     return render_template('cadastro.html', erro='')
@@ -227,6 +230,7 @@ def google_callback():
             if email in ADMIN_EMAILS:
                 u.is_admin = True
         db.session.commit()
+        session.permanent = True
         session['user_id'] = u.id
         return redirect(url_for('dashboard'))
     except Exception as e:
