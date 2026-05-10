@@ -394,15 +394,32 @@
 {% block scripts %}
 <script>
 /* ── Acordeão ── */
+var TOTAL_SECOES=7;
+var secoes_abertas=new Set();
 function toggle(btn){
   var p=btn.nextElementSibling,a=btn.querySelector('.acc-arrow');
   var o=p.classList.toggle('open');
   a.classList.toggle('open',o);
+  if(o&&localStorage.getItem(STORAGE_KEY)!=='1'){
+    var idx=Array.from(document.querySelectorAll('.acc-btn')).indexOf(btn);
+    secoes_abertas.add(idx);
+    atualizarBarraLeitura();
+  }
+}
+function atualizarBarraLeitura(){
+  var pct=Math.round(secoes_abertas.size/TOTAL_SECOES*100);
+  document.getElementById('fill-maio').style.width=pct+'%';
+  document.getElementById('prog-maio').textContent=pct+'% lido';
+  var btn=document.getElementById('btn-maio');
+  if(secoes_abertas.size>=TOTAL_SECOES){
+    btn.textContent='📝 Ir para Avaliação';
+  }
 }
 
 /* ── Estado lido ── */
+var STORAGE_KEY='estudo_maio_u{{ user.id }}';
 function loadState(){
-  var done=localStorage.getItem('estudo_maio')==='1';
+  var done=localStorage.getItem(STORAGE_KEY)==='1';
   applyDone(done);
   document.getElementById('countLido').textContent=done?1:0;
   document.getElementById('fill-geral').style.width=done?'100%':'0%';
@@ -639,7 +656,7 @@ function verGabarito(){
 }
 
 function concluirQuiz(){
-  localStorage.setItem('estudo_maio','1');
+  localStorage.setItem(STORAGE_KEY,'1');
   applyDone(true);
   document.getElementById('countLido').textContent=1;
   document.getElementById('fill-geral').style.width='100%';
