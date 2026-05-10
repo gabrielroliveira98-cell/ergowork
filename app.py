@@ -24,7 +24,9 @@ os.makedirs(os.path.join(_basedir, 'instance'), exist_ok=True)
 _db_url = os.environ.get('DATABASE_URL',
     'sqlite:///' + os.path.join(_basedir, 'instance', 'ergowork.db'))
 if _db_url.startswith('postgres://'):
-    _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+    _db_url = _db_url.replace('postgres://', 'postgresql+pg8000://', 1)
+elif _db_url.startswith('postgresql://'):
+    _db_url = _db_url.replace('postgresql://', 'postgresql+pg8000://', 1)
 app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(_basedir, 'static', 'uploads')
