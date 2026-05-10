@@ -628,6 +628,7 @@ function verGabarito(){
     }
     if(escolhida===q.correta) acertos++;
   });
+  verGabarito._acertos=acertos;
 
   // Adicionar gabarito resumido
   var gabHtml='<div class="gab-section"><div class="gab-title">📋 Gabarito</div>';
@@ -656,6 +657,11 @@ function verGabarito(){
 }
 
 function concluirQuiz(){
+  var acertos=verGabarito._acertos||0;
+  var pct=Math.round(acertos/QUESTOES.length*100);
+  fetch('/estudos/concluir',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({campanha:'maio_amarelo',acertos:acertos,total:QUESTOES.length,pontuacao:pct})
+  });
   localStorage.setItem(STORAGE_KEY,'1');
   applyDone(true);
   document.getElementById('countLido').textContent=1;

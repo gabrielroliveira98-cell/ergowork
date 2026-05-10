@@ -52,9 +52,11 @@ class User(db.Model):
     google_id   = db.Column(db.String(200), default='')
     is_admin    = db.Column(db.Boolean, default=False)
     criado_em   = db.Column(db.DateTime, default=datetime.utcnow)
-    pontos     = db.relationship('RegistroPonto', backref='usuario', lazy=True, cascade='all,delete')
-    checklists = db.relationship('ChecklistErgo', backref='usuario', lazy=True, cascade='all,delete')
-    midias     = db.relationship('Midia',         backref='usuario', lazy=True, cascade='all,delete')
+    pontos      = db.relationship('RegistroPonto',   backref='usuario', lazy=True, cascade='all,delete')
+    checklists  = db.relationship('ChecklistErgo',   backref='usuario', lazy=True, cascade='all,delete')
+    midias      = db.relationship('Midia',            backref='usuario', lazy=True, cascade='all,delete')
+    cipas       = db.relationship('RegistroCIPA',     backref='usuario', lazy=True, cascade='all,delete')
+    exercicios  = db.relationship('RegistroExercicio',backref='usuario', lazy=True, cascade='all,delete')
 
 class RegistroPonto(db.Model):
     id           = db.Column(db.Integer, primary_key=True)
@@ -103,6 +105,21 @@ class Midia(db.Model):
     descricao   = db.Column(db.Text, default='')
     tamanho     = db.Column(db.Integer, default=0)
     data_upload = db.Column(db.DateTime, default=datetime.utcnow)
+
+class RegistroCIPA(db.Model):
+    id        = db.Column(db.Integer, primary_key=True)
+    user_id   = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    campanha  = db.Column(db.String(100), default='maio_amarelo')
+    data      = db.Column(db.DateTime, default=datetime.utcnow)
+    acertos   = db.Column(db.Integer, default=0)
+    total     = db.Column(db.Integer, default=12)
+    pontuacao = db.Column(db.Integer, default=0)
+
+class RegistroExercicio(db.Model):
+    id          = db.Column(db.Integer, primary_key=True)
+    user_id     = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    exercicio   = db.Column(db.String(100), nullable=False)
+    data        = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ─────────────── HELPERS ────────────────────────────────────────
 
@@ -312,10 +329,42 @@ def salvar_checklist():
 def exercicios():
     return render_template('exercicios.html', user=current_user())
 
+@app.route('/exercicios/feito', methods=['POST'])
+@login_required
+def exercicio_feito():
+    u = current_user()
+    d = request.get_json() or {}
+    nome = str(d.get('exercicio', '')).strip()
+    if not nome:
+        return jsonify({'ok': False})
+    db.session.add(RegistroExercicio(user_id=u.id, exercicio=nome))
+    db.session.commit()
+    return jsonify({'ok': True})
+
 @app.route('/estudos')
 @login_required
 def estudos():
     return render_template('estudos.html', user=current_user())
+
+@app.route('/estudos/concluir', methods=['POST'])
+@login_required
+def concluir_cipa():
+    u = current_user()
+    d = request.get_json() or {}
+    campanha = str(d.get('campanha', 'maio_amarelo'))
+    existing = RegistroCIPA.query.filter_by(user_id=u.id, campanha=campanha).first()
+    if existing:
+        existing.data      = datetime.utcnow()
+        existing.acertos   = int(d.get('acertos', 0))
+        existing.total     = int(d.get('total', 12))
+        existing.pontuacao = int(d.get('pontuacao', 0))
+    else:
+        db.session.add(RegistroCIPA(user_id=u.id, campanha=campanha,
+                                    acertos=int(d.get('acertos', 0)),
+                                    total=int(d.get('total', 12)),
+                                    pontuacao=int(d.get('pontuacao', 0))))
+    db.session.commit()
+    return jsonify({'ok': True})
 
 @app.route('/midias')
 @login_required
@@ -397,13 +446,18 @@ def admin_panel():
         'pontos':     RegistroPonto.query.count(),
         'checklists': ChecklistErgo.query.count(),
         'midias':     Midia.query.count(),
+        'cipas':      RegistroCIPA.query.count(),
+        'exercicios': RegistroExercicio.query.count(),
     }
     dados = []
     for usr in users:
-        pontos  = RegistroPonto.query.filter_by(user_id=usr.id).order_by(RegistroPonto.data.desc()).limit(30).all()
-        checks  = ChecklistErgo.query.filter_by(user_id=usr.id).order_by(ChecklistErgo.data.desc()).limit(10).all()
-        midias  = Midia.query.filter_by(user_id=usr.id).order_by(Midia.data_upload.desc()).all()
-        dados.append({'user': usr, 'pontos': pontos, 'checks': checks, 'midias': midias})
+        pontos     = RegistroPonto.query.filter_by(user_id=usr.id).order_by(RegistroPonto.data.desc()).all()
+        checks     = ChecklistErgo.query.filter_by(user_id=usr.id).order_by(ChecklistErgo.data.desc()).all()
+        midias     = Midia.query.filter_by(user_id=usr.id).order_by(Midia.data_upload.desc()).all()
+        cipas      = RegistroCIPA.query.filter_by(user_id=usr.id).order_by(RegistroCIPA.data.desc()).all()
+        exercicios = RegistroExercicio.query.filter_by(user_id=usr.id).order_by(RegistroExercicio.data.desc()).all()
+        dados.append({'user': usr, 'pontos': pontos, 'checks': checks,
+                      'midias': midias, 'cipas': cipas, 'exercicios': exercicios})
     return render_template('admin.html', user=u, stats=stats, dados=dados, hoje=date.today().isoformat())
 
 @app.route('/admin/pontos_dia')

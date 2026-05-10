@@ -155,7 +155,8 @@ var EX=[
    desc:'Simula caminhar sem sair da cadeira. Ativa core e circulação.',
    steps:['Sente-se na borda da cadeira com costas eretas.','Eleve o joelho direito como se marchasse.','Abaixe e eleve o esquerdo alternadamente.','Mantenha ritmo moderado por 30 segundos.','Descanse 10 segundos. Repita se quiser.']},
 ];
-var done=new Set(JSON.parse(localStorage.getItem('ergo_done')||'[]'));
+var ERGO_KEY='ergo_done_u{{ user.id }}';
+var done=new Set(JSON.parse(localStorage.getItem(ERGO_KEY)||'[]'));
 var catA='todos',queue=[],qIdx=0,curEx=null;
 var tSecs=0,tTot=0,tPaused=false,tid=null;
 
@@ -214,8 +215,14 @@ function renderT(){document.getElementById('tNum').textContent=tSecs;document.ge
 function pausar(){tPaused=!tPaused;document.getElementById('btnPause').textContent=tPaused?'▶ Continuar':'⏸ Pausar'}
 function pular(){clearInterval(tid);if(queue[qIdx])concluir(queue[qIdx].id);qIdx++;mostrarTimer()}
 function sairTimer(){clearInterval(tid);document.getElementById('modalTimer').classList.add('hidden');renderGrid()}
-function concluir(id){done.add(id);localStorage.setItem('ergo_done',JSON.stringify([...done]))}
-function resetarSerie(){done.clear();localStorage.removeItem('ergo_done');renderGrid();showToast('🔄 Série reiniciada!')}
+function concluir(id){
+  done.add(id);
+  localStorage.setItem(ERGO_KEY,JSON.stringify([...done]));
+  var ex=EX.find(function(e){return e.id===id});
+  if(ex)fetch('/exercicios/feito',{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({exercicio:ex.name})});
+}
+function resetarSerie(){done.clear();localStorage.removeItem(ERGO_KEY);renderGrid();showToast('🔄 Série reiniciada!')}
 renderGrid();
 </script>
 {% endblock %}

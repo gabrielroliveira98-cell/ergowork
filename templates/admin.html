@@ -6,7 +6,8 @@
 {% endblock %}
 {% block head %}
 <style>
-.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stats4{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:560px){.stats4{grid-template-columns:1fr 1fr}}
 .stat-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;text-align:center}
 .stat-n{font-size:2rem;font-weight:800;color:var(--ink)}
 .stat-l{font-size:.78rem;color:var(--text2);margin-top:2px}
@@ -55,6 +56,8 @@
   <div class="stat-card"><div class="stat-n">{{ stats.pontos }}</div><div class="stat-l">Registros de ponto</div></div>
   <div class="stat-card"><div class="stat-n">{{ stats.checklists }}</div><div class="stat-l">Checklists realizados</div></div>
   <div class="stat-card"><div class="stat-n">{{ stats.midias }}</div><div class="stat-l">Mídias enviadas</div></div>
+  <div class="stat-card"><div class="stat-n">{{ stats.cipas }}</div><div class="stat-l">Avaliações CIPA</div></div>
+  <div class="stat-card"><div class="stat-n">{{ stats.exercicios }}</div><div class="stat-l">Exercícios concluídos</div></div>
 </div>
 
 <div class="dia-box">
@@ -79,14 +82,14 @@
     </div>
     <span class="usr-date" style="font-size:.75rem;color:var(--text2);white-space:nowrap">📅 {{ u.criado_em.strftime('%d/%m/%Y') }}</span>
     <span class="usr-stats" style="font-size:.75rem;color:var(--text2);white-space:nowrap">
-      ⏱ {{ d.pontos|length }} &nbsp; ✅ {{ d.checks|length }}
+      ⏱ {{ d.pontos|length }} &nbsp; ✅ {{ d.checks|length }} &nbsp; 🦺 {{ d.cipas|length }} &nbsp; 🏋️ {{ d.exercicios|length }}
     </span>
     <span class="chevron" id="chev-{{ u.id }}">▼</span>
   </div>
 
   <div class="usr-body" id="body-{{ u.id }}">
 
-    <div class="sec-title">Registros de Ponto (últimos 30)</div>
+    <div class="sec-title">Registros de Ponto — todos os dias ({{ d.pontos|length }})</div>
     {% if d.pontos %}
     <div class="mini-wrap">
     <table class="mini-table">
@@ -107,7 +110,7 @@
     </div>
     {% else %}<div class="empty-row">Nenhum registro de ponto ainda.</div>{% endif %}
 
-    <div class="sec-title">Checklists Ergonômicos (últimos 10)</div>
+    <div class="sec-title">Checklists Ergonômicos — todos ({{ d.checks|length }})</div>
     {% if d.checks %}
     <div class="mini-wrap"><table class="mini-table">
       <thead><tr><th>Data</th><th>Pontuação</th><th>Classificação</th></tr></thead>
@@ -123,8 +126,8 @@
     </table></div>
     {% else %}<div class="empty-row">Nenhum checklist realizado ainda.</div>{% endif %}
 
+    <div class="sec-title">📁 Mídias ({{ d.midias|length }})</div>
     {% if d.midias %}
-    <div class="sec-title">Mídias ({{ d.midias|length }})</div>
     <div class="mini-wrap"><table class="mini-table">
       <thead><tr><th>Nome</th><th>Tipo</th><th>Tamanho</th><th>Data</th></tr></thead>
       <tbody>
@@ -138,7 +141,41 @@
       {% endfor %}
       </tbody>
     </table></div>
-    {% endif %}
+    {% else %}<div class="empty-row">Nenhuma mídia enviada.</div>{% endif %}
+
+    <div class="sec-title">🦺 CIPA — Avaliações Maio Amarelo ({{ d.cipas|length }})</div>
+    {% if d.cipas %}
+    <div class="mini-wrap"><table class="mini-table">
+      <thead><tr><th>Data</th><th>Acertos</th><th>Pontuação</th><th>Resultado</th></tr></thead>
+      <tbody>
+      {% for c in d.cipas %}
+      <tr>
+        <td>{{ c.data.strftime('%d/%m/%Y %H:%M') }}</td>
+        <td>{{ c.acertos }}/{{ c.total }}</td>
+        <td><strong>{{ c.pontuacao }}%</strong></td>
+        <td><span class="badge {% if c.pontuacao >= 90 %}badge-green{% elif c.pontuacao >= 70 %}badge-blue{% elif c.pontuacao >= 50 %}badge-amber{% else %}badge-red{% endif %}">
+          {% if c.pontuacao >= 90 %}Excelente{% elif c.pontuacao >= 70 %}Bom{% elif c.pontuacao >= 50 %}Regular{% else %}Insuficiente{% endif %}
+        </span></td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-row">Nenhuma avaliação CIPA realizada.</div>{% endif %}
+
+    <div class="sec-title">🏋️ Exercícios Concluídos ({{ d.exercicios|length }})</div>
+    {% if d.exercicios %}
+    <div class="mini-wrap"><table class="mini-table">
+      <thead><tr><th>Exercício</th><th>Data/Hora</th></tr></thead>
+      <tbody>
+      {% for e in d.exercicios %}
+      <tr>
+        <td>{{ e.exercicio }}</td>
+        <td>{{ e.data.strftime('%d/%m/%Y %H:%M') }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-row">Nenhum exercício registrado.</div>{% endif %}
 
     <div class="usr-actions">
       {% if not u.is_admin %}
