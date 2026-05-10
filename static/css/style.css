@@ -25,6 +25,8 @@ body{
 }
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
+/* Elimina delay de 300ms em Android — app mais responsivo */
+a,button,input,select,textarea,[role="button"]{touch-action:manipulation}
 img{max-width:100%;height:auto;display:block}
 
 input,select,textarea{
@@ -193,14 +195,29 @@ table.data tr:hover td{background:var(--bg2)}
   .g4{grid-template-columns:1fr 1fr}
 }
 @media(max-width:640px){
+  body{overscroll-behavior-y:contain}
   .sidebar{display:none}
   .bottom-nav{display:block}
   .main{margin-left:0}
   .content{padding:14px;padding-bottom:calc(var(--nav-h) + 20px + env(safe-area-inset-bottom,0))}
   .topbar{padding:12px 14px}
+  .topbar h2{font-size:1rem}
   .g2,.g3,.g4{grid-template-columns:1fr 1fr}
   .g4.force1,.g3.force1,.g2.force1{grid-template-columns:1fr}
   #toast{bottom:calc(var(--nav-h) + env(safe-area-inset-bottom,0) + 12px)}
+  /* Remove blur no overlay — muito pesado em Androids intermediários */
+  .overlay{backdrop-filter:none}
+  /* Primeira coluna das tabelas fica fixa ao rolar horizontal */
+  .table-wrap table.data th:first-child,
+  .table-wrap table.data td:first-child{position:sticky;left:0;z-index:2}
+  .table-wrap table.data th:first-child{background:var(--bg2)}
+  .table-wrap table.data td:first-child{background:var(--card)}
+  .table-wrap table.data tr:hover td:first-child{background:var(--bg2)}
+  /* Modais ocupam mais da tela */
+  .overlay.center{padding:10px}
+  /* Stat cards em 2 colunas ficam bem */
+  .stat-card{padding:12px 14px}
+  .stat-val{font-size:1.3rem}
 }
 @media(max-width:380px){
   .g2,.g3,.g4{grid-template-columns:1fr}

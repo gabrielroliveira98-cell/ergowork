@@ -10,7 +10,11 @@
 {% block head %}
 <style>
 .cl-wrap{display:grid;grid-template-columns:1fr 290px;gap:14px;align-items:start}
-@media(max-width:860px){.cl-wrap{grid-template-columns:1fr}}
+@media(max-width:860px){
+  .cl-wrap{display:flex;flex-direction:column}
+  .res-panel{order:-1;position:static}
+  .tips-box{max-height:120px}
+}
 .q-card{background:var(--card);border:2px solid var(--border);border-radius:var(--radius);padding:15px 16px;margin-bottom:10px;transition:border-color .2s,background .2s}
 .q-card.ans-sim{border-color:var(--green);background:var(--green-l)}
 .q-card.ans-nao{border-color:var(--red);background:var(--red-l)}
