@@ -18,7 +18,14 @@ import os, json
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'ergowork_2025_secret')
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ergowork.db'
+
+_basedir = os.path.abspath(os.path.dirname(__file__))
+os.makedirs(os.path.join(_basedir, 'instance'), exist_ok=True)
+_db_url = os.environ.get('DATABASE_URL',
+    'sqlite:///' + os.path.join(_basedir, 'instance', 'ergowork.db'))
+if _db_url.startswith('postgres://'):
+    _db_url = _db_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = _db_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(__file__), 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500 MB
@@ -96,11 +103,19 @@ class Midia(db.Model):
 
 # ─────────────── HELPERS ────────────────────────────────────────
 
+def current_user():
+    if 'user_id' not in session:
+        return None
+    u = User.query.get(session['user_id'])
+    if not u:
+        session.clear()
+    return u
+
 def login_required(f):
     from functools import wraps
     @wraps(f)
     def deco(*a, **kw):
-        if 'user_id' not in session:
+        if not current_user():
             return redirect(url_for('login'))
         return f(*a, **kw)
     return deco
@@ -109,16 +124,13 @@ def admin_required(f):
     from functools import wraps
     @wraps(f)
     def deco(*a, **kw):
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
         u = current_user()
-        if not u or not u.is_admin:
+        if not u:
+            return redirect(url_for('login'))
+        if not u.is_admin:
             return redirect(url_for('dashboard'))
         return f(*a, **kw)
     return deco
-
-def current_user():
-    return User.query.get(session['user_id']) if 'user_id' in session else None
 
 def ponto_hoje(uid):
     return RegistroPonto.query.filter_by(user_id=uid, data=date.today()).first()
@@ -162,6 +174,10 @@ def cadastro():
         if len(senha) < 4:
             return render_template('cadastro.html', erro='Senha mínima de 4 caracteres.')
         u = User(nome=nome, email=email, senha_hash=generate_password_hash(senha), cargo=cargo)
+        fp = request.files.get('foto_perfil')
+        if fp and fp.filename:
+            import base64
+            u.foto_perfil = 'data:' + fp.mimetype + ';base64,' + base64.b64encode(fp.read()).decode()
         db.session.add(u); db.session.commit()
         session['user_id'] = u.id
         return redirect(url_for('dashboard'))
@@ -254,7 +270,7 @@ def registrar_ponto():
         agora = datetime.fromisoformat(ts_str) if ts_str else datetime.now()
     except Exception:
         agora = datetime.now()
-    hoje_data = agora.date()
+    hoje_data = date.today()
     h = RegistroPonto.query.filter_by(user_id=u.id, data=hoje_data).first()
     if not h:
         h = RegistroPonto(user_id=u.id, data=hoje_data)
@@ -384,7 +400,34 @@ def admin_panel():
         checks  = ChecklistErgo.query.filter_by(user_id=usr.id).order_by(ChecklistErgo.data.desc()).limit(10).all()
         midias  = Midia.query.filter_by(user_id=usr.id).order_by(Midia.data_upload.desc()).all()
         dados.append({'user': usr, 'pontos': pontos, 'checks': checks, 'midias': midias})
-    return render_template('admin.html', user=u, stats=stats, dados=dados)
+    return render_template('admin.html', user=u, stats=stats, dados=dados, hoje=date.today().isoformat())
+
+@app.route('/admin/pontos_dia')
+@admin_required
+def admin_pontos_dia():
+    data_str = request.args.get('data', date.today().isoformat())
+    try:
+        d = date.fromisoformat(data_str)
+    except ValueError:
+        d = date.today()
+    registros = RegistroPonto.query.filter_by(data=d).order_by(RegistroPonto.entrada).all()
+    resultado = []
+    for r in registros:
+        u = User.query.get(r.user_id)
+        if not u:
+            continue
+        fmt = lambda dt: dt.strftime('%H:%M') if dt else None
+        resultado.append({
+            'nome':    u.nome,
+            'cargo':   u.cargo or '—',
+            'entrada': fmt(r.entrada),
+            'almoco':  fmt(r.almoco),
+            'retorno': fmt(r.retorno),
+            'saida':   fmt(r.saida),
+            'total':   r.total_fmt if r.saida else ('Em curso' if r.entrada else '—'),
+            'status':  'completo' if r.saida else ('andamento' if r.entrada else 'ausente'),
+        })
+    return jsonify({'ok': True, 'data_fmt': d.strftime('%d/%m/%Y'), 'registros': resultado})
 
 @app.route('/admin/promover/<int:uid>', methods=['POST'])
 @admin_required

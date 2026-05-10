@@ -8,6 +8,10 @@ body{background:var(--ink);display:flex;align-items:center;justify-content:cente
 .box .sub{color:var(--text2);font-size:.86rem;margin-bottom:22px}
 .err{background:var(--red-l);color:var(--red);border-radius:9px;padding:10px 14px;font-size:.83rem;font-weight:600;margin-bottom:14px}
 .back{display:inline-flex;align-items:center;gap:5px;font-size:.81rem;color:var(--text2);margin-bottom:16px}
+.foto-area{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+.foto-preview{width:64px;height:64px;border-radius:50%;background:var(--bg2);border:2px solid var(--border);overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:1.6rem;color:var(--text2);flex-shrink:0}
+.foto-preview img{width:100%;height:100%;object-fit:cover}
+.foto-label{font-size:.8rem;color:var(--text2);cursor:pointer;text-decoration:underline}
 </style>
 {% endblock %}
 {% block body %}
@@ -16,7 +20,15 @@ body{background:var(--ink);display:flex;align-items:center;justify-content:cente
   <h2>Criar conta</h2>
   <p class="sub">Preencha para começar a usar o ErgoWork</p>
   {% if erro %}<div class="err">⚠️ {{ erro }}</div>{% endif %}
-  <form method="POST">
+  <form method="POST" enctype="multipart/form-data">
+    <div class="foto-area">
+      <div class="foto-preview" id="fotoCircle">👤</div>
+      <div>
+        <div style="font-size:.82rem;font-weight:600;margin-bottom:4px">Foto de perfil</div>
+        <label class="foto-label" for="fotoInput">Escolher foto (opcional)</label>
+        <input type="file" id="fotoInput" name="foto_perfil" accept="image/*" style="display:none" onchange="prevCad(event)">
+      </div>
+    </div>
     <div class="form-row">
       <div class="form-group"><label>Nome completo</label><input type="text" name="nome" placeholder="João Silva" required/></div>
       <div class="form-group"><label>Cargo</label><input type="text" name="cargo" placeholder="Analista..."/></div>
@@ -26,4 +38,15 @@ body{background:var(--ink);display:flex;align-items:center;justify-content:cente
     <button type="submit" class="btn btn-ink btn-full">Criar conta →</button>
   </form>
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+function prevCad(e){
+  var f=e.target.files[0];if(!f)return;
+  var c=document.getElementById('fotoCircle');
+  var img=document.createElement('img');
+  img.src=URL.createObjectURL(f);
+  c.innerHTML='';c.appendChild(img);
+}
+</script>
 {% endblock %}

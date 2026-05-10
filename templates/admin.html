@@ -37,6 +37,15 @@
 .btn-xs.warn{background:#fef3c7;color:#92400e;border-color:#fcd34d}
 .empty-row{text-align:center;padding:10px;color:var(--text2);font-size:.8rem}
 @media(max-width:640px){.stats4{grid-template-columns:1fr 1fr}.usr-head{grid-template-columns:36px 1fr auto}}
+.dia-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 16px;margin-bottom:20px}
+.dia-box h3{font-size:.9rem;font-weight:700;margin:0 0 12px}
+.dia-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.dia-row input[type=date]{flex:1;min-width:160px;padding:8px 12px;border:1px solid var(--border);border-radius:10px;background:var(--bg2);color:var(--ink);font-size:.85rem}
+.dia-row button{padding:8px 18px;border-radius:10px;border:none;background:var(--accent,#6366f1);color:#fff;font-size:.85rem;font-weight:700;cursor:pointer}
+.dia-result{margin-top:14px}
+.status-ok{color:#16a34a;font-weight:700}
+.status-and{color:#2563eb;font-weight:700}
+.status-aus{color:var(--text2)}
 </style>
 {% endblock %}
 {% block content %}
@@ -46,6 +55,15 @@
   <div class="stat-card"><div class="stat-n">{{ stats.pontos }}</div><div class="stat-l">Registros de ponto</div></div>
   <div class="stat-card"><div class="stat-n">{{ stats.checklists }}</div><div class="stat-l">Checklists realizados</div></div>
   <div class="stat-card"><div class="stat-n">{{ stats.midias }}</div><div class="stat-l">Mídias enviadas</div></div>
+</div>
+
+<div class="dia-box">
+  <h3>🗓️ Ponto por Dia — Ver registros de todos os funcionários em um dia específico</h3>
+  <div class="dia-row">
+    <input type="date" id="dia-input" value="{{ hoje }}">
+    <button onclick="buscarDia()">Buscar</button>
+  </div>
+  <div class="dia-result" id="dia-result"></div>
 </div>
 
 {% for d in dados %}
@@ -161,5 +179,38 @@ async function excluir(id, nome){
   if(d.ok){showToast('Usuário excluído.');setTimeout(function(){location.reload()},1200)}
   else showToast('Erro: '+d.erro);
 }
+async function buscarDia(){
+  var data=document.getElementById('dia-input').value;
+  if(!data)return;
+  var box=document.getElementById('dia-result');
+  box.innerHTML='<p style="color:var(--text2);font-size:.85rem">Carregando...</p>';
+  var r=await fetch('/admin/pontos_dia?data='+data);
+  var res=await r.json();
+  if(!res.ok){box.innerHTML='<p style="color:red">Erro ao buscar.</p>';return;}
+  if(!res.registros.length){
+    box.innerHTML='<p style="color:var(--text2);font-size:.85rem;margin-top:8px">Nenhum registro encontrado para '+res.data_fmt+'.</p>';
+    return;
+  }
+  var statusLabel={completo:'✅ Completo',andamento:'🔵 Em curso',ausente:'⬜ Ausente'};
+  var statusClass={completo:'status-ok',andamento:'status-and',ausente:'status-aus'};
+  var rows=res.registros.map(function(r){
+    return '<tr>'+
+      '<td style="font-weight:600">'+r.nome+'</td>'+
+      '<td style="color:var(--text2)">'+r.cargo+'</td>'+
+      '<td>'+(r.entrada||'—')+'</td>'+
+      '<td>'+(r.almoco||'—')+'</td>'+
+      '<td>'+(r.retorno||'—')+'</td>'+
+      '<td>'+(r.saida||'—')+'</td>'+
+      '<td style="font-weight:700">'+r.total+'</td>'+
+      '<td class="'+statusClass[r.status]+'">'+statusLabel[r.status]+'</td>'+
+    '</tr>';
+  }).join('');
+  box.innerHTML=
+    '<p style="font-size:.8rem;color:var(--text2);margin-bottom:8px">'+res.registros.length+' funcionário(s) — '+res.data_fmt+'</p>'+
+    '<div class="mini-wrap"><table class="mini-table">'+
+    '<thead><tr><th>Funcionário</th><th>Cargo</th><th>Entrada</th><th>Almoço</th><th>Retorno</th><th>Saída</th><th>Total</th><th>Status</th></tr></thead>'+
+    '<tbody>'+rows+'</tbody></table></div>';
+}
+document.addEventListener('DOMContentLoaded',function(){buscarDia();});
 </script>
 {% endblock %}
