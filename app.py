@@ -244,7 +244,9 @@ def google_callback():
             db.session.add(u)
         else:
             u.google_id = info.get('id', u.google_id)
-            u.foto_perfil = info.get('picture', u.foto_perfil)
+            # Só atualiza foto do Google se o usuário não tiver uma foto customizada (base64)
+            if not u.foto_perfil or u.foto_perfil.startswith('http'):
+                u.foto_perfil = info.get('picture', u.foto_perfil)
             if email in ADMIN_EMAILS:
                 u.is_admin = True
         db.session.commit()
