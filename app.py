@@ -1,5 +1,5 @@
 """
-ErgoWork — Backend Flask Completo
+ErgoHome — Backend Flask Completo
 Fixes: upload de vídeo corrigido, todas as rotas, Google OAuth, mobile
 """
 try:
@@ -525,7 +525,7 @@ def _init_db():
         if changed:
             db.session.commit()
         if not User.query.first():
-            demo = User(nome='Demo ErgoWork', email='demo@ergo.com',
+            demo = User(nome='Demo ErgoHome', email='demo@ergo.com',
                         senha_hash=generate_password_hash('1234'), cargo='Analista')
             db.session.add(demo); db.session.commit()
             print('Usuario demo: demo@ergo.com / 1234')

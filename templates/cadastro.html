@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Cadastro — ErgoWork{% endblock %}
+{% block title %}Cadastro — ErgoHome{% endblock %}
 {% block head %}
 <style>
 body{background:var(--ink);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
@@ -18,7 +18,7 @@ body{background:var(--ink);display:flex;align-items:center;justify-content:cente
 <div class="box">
   <a href="/login" class="back">← Voltar ao login</a>
   <h2>Criar conta</h2>
-  <p class="sub">Preencha para começar a usar o ErgoWork</p>
+  <p class="sub">Preencha para começar a usar o ErgoHome</p>
   {% if erro %}<div class="err">⚠️ {{ erro }}</div>{% endif %}
   <form method="POST" enctype="multipart/form-data">
     <div class="foto-area">
