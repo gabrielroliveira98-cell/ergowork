@@ -14,10 +14,10 @@ from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-import base64, os, json
+import base64, os, json, secrets
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'ergowork_2025_secret')
+app.secret_key = os.environ.get('SECRET_KEY') or secrets.token_hex(32)
 
 _basedir = os.path.abspath(os.path.dirname(__file__))
 os.makedirs(os.path.join(_basedir, 'instance'), exist_ok=True)
@@ -524,11 +524,12 @@ def _init_db():
                 changed = True
         if changed:
             db.session.commit()
-        if not User.query.first():
+        if os.environ.get('ENABLE_DEMO_SEED') == '1' and not User.query.first():
+            demo_senha = os.environ.get('DEMO_SEED_PASSWORD') or secrets.token_urlsafe(12)
             demo = User(nome='Demo ErgoHome', email='demo@ergo.com',
-                        senha_hash=generate_password_hash('1234'), cargo='Analista')
+                        senha_hash=generate_password_hash(demo_senha), cargo='Analista')
             db.session.add(demo); db.session.commit()
-            print('Usuario demo: demo@ergo.com / 1234')
+            print(f'Usuario demo: demo@ergo.com / {demo_senha}')
     except Exception as e:
         print(f'[WARN] init_db falhou (DB pode estar indisponivel): {e}')
 
